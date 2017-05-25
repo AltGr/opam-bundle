@@ -1,0 +1,471 @@
+(**************************************************************************)
+(*                                                                        *)
+(*    Copyright 2017 OCamlPro                                             *)
+(*                                                                        *)
+(*  All rights reserved. This file is distributed under the terms of the  *)
+(*  GNU Lesser General Public License version 2.1, with the special       *)
+(*  exception on linking described in the file LICENSE.                   *)
+(*                                                                        *)
+(**************************************************************************)
+
+open OpamTypes
+open OpamStateTypes
+open OpamProcess.Job.Op
+
+
+let bootstrap_packages ocamlv = [
+  OpamPackage.Name.of_string "ocaml-base-compiler", Some (`Eq, ocamlv);
+  OpamPackage.Name.of_string "depext", None;
+]
+
+let additional_user_packages ocamlv = [
+  OpamPackage.Name.of_string "ocaml-system", Some (`Eq, ocamlv);
+]
+
+let hardcoded_env ocamlv = [
+  OpamVariable.of_string "sys-ocaml-version",
+  (lazy (Some (S (OpamPackage.Version.to_string ocamlv))),
+   "Pre-selected OCaml version");
+]
+
+(* Used to optimise solving times: we know we'll never need those (since we
+   require a definite version, and hardcode the use of ocaml-base-compiler for
+   bootstrap (and ocaml-system for reuse) *)
+let exclude_packages ocamlv = [
+  OpamPackage.Name.of_string "ocaml", Some (`Neq, ocamlv);
+  OpamPackage.Name.of_string "ocaml-variants", None;
+]
+
+let create_bundle ocamlv opamv repo debug output env test doc packages =
+  OpamClientConfig.opam_init ~debug_level:(if debug then 1 else 0) ();
+  let ocamlv = match ocamlv with
+    | Some v -> v
+    | None ->
+      let v =
+        try
+          OpamPackage.Version.of_string @@
+          List.hd (OpamSystem.read_command_output ["ocamlc"; "-vnum"])
+        with e -> OpamStd.Exn.fatal e; OpamPackage.Version.of_string "4.04.1"
+      in
+      OpamConsole.msg "No OCaml version selected, will use %s.\n"
+        (OpamConsole.colorise `bold @@ OpamPackage.Version.to_string v);
+      v
+  in
+  let env =
+    match env with
+    | Some e ->
+      let comment = "Manually defined" in
+      List.map (fun s ->
+          match OpamStd.String.cut_at s '=' with
+          | Some (var,value) ->
+            OpamVariable.of_string var, (lazy (Some (S value)), comment)
+          | None ->
+            OpamVariable.of_string s, (lazy (Some (B true)), comment))
+        e
+      |> OpamVariable.Map.of_list
+    | None ->
+      let comment = "Inferred from current system" in
+      let e = [
+        OpamVariable.of_string "arch",
+        (lazy (Some (S (OpamStd.Sys.arch ()))), comment);
+        OpamVariable.of_string "os",
+        (lazy (Some (S (OpamStd.Sys.os_string ()))), comment);
+      ] in
+      OpamConsole.msg "No environment specified, will use the following for \
+                       package resolution (based on the host system):\n%s"
+        (OpamStd.Format.itemize (fun (v, (lazy c, _)) ->
+             Printf.sprintf "%s = %S"
+               (OpamConsole.colorise `bold @@ OpamVariable.to_string v)
+               (OpamStd.Option.to_string
+                  OpamVariable.string_of_variable_contents c))
+            e);
+      OpamVariable.Map.of_list e
+  in
+  let env =
+    OpamVariable.Map.union (fun a _ -> a)
+      env
+      (OpamVariable.Map.of_list (hardcoded_env ocamlv))
+  in
+  let packages_filter =
+    let module L = OpamListCommand in
+    OpamFormula.ands [
+      if OpamVariable.Map.is_empty env then Atom L.Any else Atom L.Available;
+      OpamFormula.ors [
+        Atom (L.Solution (L.default_dependency_toggles,
+                          bootstrap_packages ocamlv));
+        Atom (L.Solution ({L.default_dependency_toggles with L.test; doc},
+                          packages @ additional_user_packages ocamlv));
+      ]
+    ]
+  in
+  OpamFilename.with_tmp_dir @@ fun tmp ->
+  let opam_root = OpamFilename.Op.(tmp / "root") in
+  OpamStateConfig.update ~root_dir:opam_root ();
+  let repos_dir = OpamFilename.Op.(tmp / "repos") in
+  OpamConsole.header_msg "Initialising repositories";
+  let repos_list_rev, repos_map =
+    List.fold_left (fun (repos_list_rev, repos_map) url ->
+        let name =
+          let repo_name =
+            match OpamStd.String.split url.OpamUrl.path '/' with
+            | s::_ -> s
+            | [] -> "repository"
+          in
+          let rec uniq i =
+            let name =
+              OpamRepositoryName.of_string
+                (Printf.sprintf "%s%s" repo_name
+                   (if i = 0 then "" else string_of_int i))
+            in
+            if OpamRepositoryName.Map.mem name repos_map then uniq (i+1)
+            else name
+          in
+          uniq 0
+        in
+        let repo = {
+          repo_root =
+            OpamFilename.Op.(repos_dir / OpamRepositoryName.to_string name);
+          repo_name = name;
+          repo_url = url;
+          repo_trust = None;
+        } in
+        repo.repo_name :: repos_list_rev,
+        OpamRepositoryName.Map.add repo.repo_name repo repos_map)
+      ([], OpamRepositoryName.Map.empty)
+      repo
+  in
+  let repos_list = List.rev repos_list_rev in
+  let dl_cache =
+    let std_opamroot = OpamStateConfig.opamroot () in
+    [OpamUrl.parse ~backend:`rsync
+       (OpamFilename.Dir.to_string (OpamPath.download_cache std_opamroot))]
+  in
+  let gt = {
+    global_lock = OpamSystem.lock_none;
+    root = opam_root;
+    config =
+      OpamFile.Config.empty
+      |> OpamFile.Config.with_repositories repos_list
+      |> OpamFile.Config.with_dl_cache dl_cache;
+    global_variables = env;
+  } in
+  let rt = {
+    repos_global = (gt :> unlocked global_state);
+    repos_lock = OpamSystem.lock_none;
+    repositories = repos_map;
+    repos_definitions =
+      OpamRepositoryName.Map.map (fun r ->
+          OpamFile.Repo.safe_read
+            OpamRepositoryPath.(repo (create gt.root r.repo_name)) |>
+          OpamFile.Repo.with_root_url r.repo_url)
+        repos_map;
+    repo_opams = OpamRepositoryName.Map.empty;
+  } in
+  let success, rt =
+    OpamRepositoryCommand.update_with_auto_upgrade rt
+      (OpamRepositoryName.Map.keys repos_map)
+  in
+  if not success then
+    OpamConsole.error_and_exit "Could not fetch the repositories";
+(*
+  OpamParallel.iter ~jobs:OpamStateConfig.(!r.dl_jobs)
+    ~command:(fun repo ->
+        let text =
+          OpamProcess.make_command_text ~color:`blue
+            (OpamRepositoryName.to_string repo.repo_name)
+            OpamUrl.(string_of_backend repo.repo_url.backend)
+        in
+        OpamProcess.Job.with_text text @@
+        OpamRepository.update repo)
+    (OpamRepositoryName.Map.values repos_map);
+*)
+  OpamConsole.header_msg "Resolving package set";
+  let st =
+    OpamSwitchState.load_virtual ~repos_list gt rt
+  in
+  let available =
+    OpamPackage.Map.filter (fun package opam ->
+        OpamFilter.eval_to_bool ~default:false
+          (OpamPackageVar.resolve_switch_raw ~package gt
+             OpamSwitch.unset OpamFile.Switch_config.empty)
+          (OpamFile.OPAM.available opam))
+      st.opams
+    |> OpamPackage.keys
+  in
+  let st = { st with available_packages = lazy available } in
+  let unavailable =
+    let required_atoms =
+      bootstrap_packages ocamlv @
+      packages @
+      additional_user_packages ocamlv
+    in
+    List.filter (fun (name, _ as atom) ->
+        not @@ OpamPackage.Set.exists
+          (OpamFormula.check atom)
+          (OpamPackage.packages_of_name available name))
+      required_atoms
+  in
+  if unavailable <> [] then
+    OpamConsole.error_and_exit
+      "The following packages do not exist in the specified repositories, or \
+       are not available with the given configuration:\n%s"
+      (OpamStd.Format.itemize OpamFormula.string_of_atom unavailable);
+  let st = (* this is just an optimisation, to relieve the solver *)
+    let filter =
+      let excl =
+        OpamFormula.ors
+          (List.map (fun a -> Atom a) (exclude_packages ocamlv))
+      in
+      OpamPackage.Set.filter (fun nv ->
+          not @@ OpamFormula.eval (fun at -> OpamFormula.check at nv) excl)
+    in
+    { st with
+      packages = filter st.packages;
+      available_packages = lazy (filter (Lazy.force st.available_packages));
+    }
+  in
+  let packages = OpamListCommand.filter ~base:st.packages st packages_filter in
+  if OpamPackage.Set.is_empty packages then
+    OpamConsole.error_and_exit "No packages match the selection criteria";
+  OpamConsole.msg "The following packages will be included:\n%s"
+    (OpamStd.Format.itemize (fun nv ->
+         OpamConsole.colorise `bold (OpamPackage.name_to_string nv) ^"."^
+         OpamPackage.version_to_string nv)
+        (OpamPackage.Set.elements packages));
+  if not @@ OpamConsole.confirm "Continue ?" then
+    OpamStd.Sys.exit 12;
+  OpamConsole.header_msg "Getting all archives";
+  let bundle_dir = OpamFilename.Op.(tmp / "bundle") in
+  let target_repo = OpamFilename.Op.(bundle_dir / "repo") in
+  let cache_dirname = "cache" in
+  let target_cache = OpamFilename.Op.(target_repo / cache_dirname) in
+  let links_dirname = "archive" in
+  let target_links = OpamFilename.Op.(target_repo / links_dirname) in
+  OpamFilename.mkdir target_repo;
+  OpamFilename.mkdir target_cache;
+  OpamFilename.mkdir target_links;
+  let repo_file = OpamFile.Repo.create ~dl_cache:[cache_dirname] () in
+  OpamFile.Repo.write (OpamRepositoryPath.repo target_repo) repo_file;
+  let target_dest f nv =
+    f target_repo (Some (OpamPackage.name_to_string nv)) nv
+  in
+  OpamPackage.Set.iter (fun nv ->
+      let opam = OpamSwitchState.opam st nv in
+      let orig_dir = match OpamFile.OPAM.metadata_dir opam with
+        | Some dir -> dir
+        | None -> assert false
+      in
+      let opam_f = OpamFile.make OpamFilename.Op.(orig_dir // "opam") in
+      let files_dir = OpamFilename.Op.(orig_dir / "files") in
+      let opam = OpamSwitchState.opam st nv in
+      OpamFile.OPAM.write_with_preserved_format ~format_from:opam_f
+        (target_dest OpamRepositoryPath.opam nv) opam;
+      if OpamFilename.exists_dir files_dir then
+        OpamFilename.copy_dir
+          ~src:files_dir
+          ~dst:(target_dest OpamRepositoryPath.files nv))
+    packages;
+  let pull_to_cache nv =
+    let dl_job ?extra urlf =
+      let link target =
+        let name =
+          OpamStd.Option.default
+            (OpamUrl.basename (OpamFile.URL.url urlf))
+            extra
+        in
+        let link =
+          OpamFilename.Op.(target_links / OpamPackage.to_string nv // name)
+        in
+        OpamFilename.link ~relative:true ~target ~link
+      in
+      let source_string =
+        Printf.sprintf "%s of %s from %s"
+          (match extra with None -> "Source" | Some n -> "Extra source "^n)
+          (OpamPackage.to_string nv) (OpamUrl.to_string (OpamFile.URL.url urlf))
+      in
+      match OpamFile.URL.checksum urlf with
+      | [] ->
+        OpamFilename.with_tmp_dir_job @@ fun dldir ->
+        let f = OpamFilename.Op.(dldir // OpamPackage.to_string nv) in
+        OpamDownload.download_as ~overwrite:false (OpamFile.URL.url urlf) f
+        @@| fun () ->
+        let hash = OpamHash.compute (OpamFilename.to_string f) in
+        let dst = OpamRepository.cache_file target_cache hash in
+        OpamFilename.move ~src:f ~dst;
+        OpamConsole.warning
+          "%s had no recorded checksum: adding %s"
+          source_string (OpamHash.to_string hash);
+        link dst;
+        OpamFile.URL.with_checksum [hash] urlf
+      | (hash::_) as cksums ->
+        let name = match extra with
+          | None -> OpamPackage.to_string nv
+          | Some s -> Printf.sprintf "%s/%s" (OpamPackage.name_to_string nv) s
+        in
+        let dst = OpamRepository.cache_file target_cache hash in
+        OpamRepository.pull_file_to_cache name
+          ~cache_dir:target_cache ~cache_urls:dl_cache cksums
+          (OpamFile.URL.url urlf :: OpamFile.URL.mirrors urlf)
+        @@| function
+        | Not_available msg ->
+          OpamConsole.error_and_exit "%s could not be obtained: %s"
+            source_string msg
+        | Result _ | Up_to_date _ ->
+          link dst;
+          urlf
+    in
+    let opam = OpamSwitchState.opam st nv in
+    let opam0 = opam in
+    (match OpamFile.OPAM.url opam with
+     | None -> Done opam
+     | Some urlf ->
+       dl_job urlf @@| fun urlf -> OpamFile.OPAM.with_url urlf opam)
+    @@+ fun opam ->
+    OpamProcess.Job.seq_map
+      (fun (name, urlf) ->
+         dl_job ~extra:(OpamFilename.Base.to_string name) urlf @@| fun urlf ->
+         name, urlf)
+      (OpamFile.OPAM.extra_sources opam)
+    @@| fun extra_sources ->
+    let opam = OpamFile.OPAM.with_extra_sources extra_sources opam in
+    if opam <> opam0 then
+      OpamFile.OPAM.write_with_preserved_format
+        (target_dest OpamRepositoryPath.opam nv) opam
+  in
+  let randomised_pkglist =
+    (* Some pseudo-randomisation to avoid downloading all files from
+       the same host simultaneously *)
+    List.sort (fun nv1 nv2 ->
+        match compare (Hashtbl.hash nv1) (Hashtbl.hash nv2) with
+        | 0 -> compare nv1 nv2
+        | n -> n)
+      (OpamPackage.Set.elements packages)
+  in
+  OpamParallel.iter ~jobs:OpamStateConfig.(!r.dl_jobs)
+    ~command:pull_to_cache
+    randomised_pkglist;
+  OpamConsole.header_msg "Getting bootstrap packages";
+  OpamConsole.header_msg "Building bundle";
+  failwith "the end"
+
+(* -- command-line handling -- *)
+
+open Cmdliner
+
+let pkg_version_conv =
+  Arg.conv ~docv:"VERSION" (
+    (fun s -> try Ok (OpamPackage.Version.of_string s) with Failure s ->
+        Error (`Msg s)),
+    (fun ppf v -> Format.pp_print_string ppf (OpamPackage.Version.to_string v))
+  )
+
+let ocamlv_arg =
+  Arg.(value & opt (some pkg_version_conv) None & info ["ocaml"] ~doc:
+         "Select a version of OCaml to include. It will be used for \
+          bootstrapping, and must be able to compile opam.")
+
+let opam_arg =
+  Arg.(value & opt (some string) None & info ["opam"] ~doc:
+         "Select a version of opam to include. That version must be released \
+          with an upstream \"full-archive\" available online, and be at least \
+          2.0.0~beta3, to support all the required features.")
+
+let repo_arg =
+  Arg.(value & opt_all OpamArg.url [OpamInitDefaults.repository_url] &
+       info ["repository"] ~docv:"URL" ~doc:
+         "URLs of the repositories to use (highest priority first). Note that \
+          it is required that the OCaml package at the selected version is \
+          included (see $(b,--ocaml)), with the hierarchy and alternatives as \
+          on the default repository ('ocaml-base-compiler' and 'ocaml-system' \
+          packages, with the 'ocaml' wrapper virtual package). This makes it \
+          possible to bootstrap opam and compile the requested packages with a \
+          single compilation of OCaml.")
+
+let debug_arg =
+  Arg.(value & flag & info ["debug"] ~doc:
+         "Display debug information about what's going on.")
+
+let output_arg =
+  Arg.(value & opt (some OpamArg.filename) None & info ["output";"o"] ~doc:
+         "Output the bundle to the given file.")
+
+let env_arg =
+  Arg.(value & opt (some (list string)) ~vopt:(Some []) None &
+       info ["environment"] ~doc:
+         "Use the given opam environment, in the form of a list of \
+          comma-separated 'var=value' bindings, when resolving variables. This \
+          is used when computing the set of available packages: if undefined, \
+          a set of predefined variables based on the current system is used. \
+          If set without argument, an empty environment is used and \
+          availability of packages is not taken into account.")
+
+let with_test_arg =
+  Arg.(value & flag & info ["t";"with-test"] ~doc:
+         "Include the packages' test-only dependencies in the bundle.")
+
+let with_doc_arg =
+  Arg.(value & flag & info ["d";"with-doc"] ~doc:
+         "Include the packages' doc-only dependencies in the bundle.")
+
+let packages_arg =
+  Arg.(non_empty & pos_all OpamArg.atom [] & info [] ~docv:"PACKAGES" ~doc:
+         "List of packages to include in the bundle. Their dependencies will \
+          be included in the bundle, but only these packages will be \
+          installed.")
+
+let man = [
+  `S "DESCRIPTION";
+  `P "This utility can extract a set of packages from opam repositories, and \
+      bundle them together in a comprehensive source archive, with the scripts \
+      needed to bootstrap OCaml, opam, and install the packages on a fresh, \
+      network-less system.";
+]
+
+let create_bundle_command =
+  Term.(pure create_bundle $ ocamlv_arg $ opam_arg $ repo_arg $ debug_arg $
+        output_arg $ env_arg $ with_test_arg $ with_doc_arg $ packages_arg),
+  Term.info "opam-bundle" ~man ~doc:
+    "Creates standalone source bundle from opam packages"
+
+let () =
+  OpamSystem.init ();
+  try
+    match Term.eval ~catch:false create_bundle_command with
+    | `Error _ -> exit 1
+    | _ -> exit 0
+  with
+  | e ->
+    flush stdout;
+    flush stderr;
+    if (OpamConsole.debug ()) then
+      Printf.eprintf "'%s' failed.\n" (String.concat " " (Array.to_list Sys.argv));
+    let exit_code = ref 1 in
+    begin match e with
+      | OpamStd.Sys.Exit i ->
+        exit_code := i;
+        if (OpamConsole.debug ()) && i <> 0 then
+          Printf.eprintf "%s" (OpamStd.Exn.pretty_backtrace e)
+      | OpamSystem.Internal_error _ ->
+        Printf.eprintf "%s\n" (Printexc.to_string e)
+      | OpamSystem.Process_error result ->
+        Printf.eprintf "%s Command %S failed:\n%s\n"
+          (OpamConsole.colorise `red "[ERROR]")
+          (try List.assoc "command" result.OpamProcess.r_info with
+           | Not_found -> "")
+          (Printexc.to_string e);
+        Printf.eprintf "%s" (OpamStd.Exn.pretty_backtrace e);
+      | Sys.Break
+      | OpamParallel.Errors (_, (_, Sys.Break)::_, _) ->
+        exit_code := 130
+      | Sys_error e when e = "Broken pipe" ->
+        (* workaround warning 52, this is a fallback (we already handle the
+           signal) and there is no way around at the moment *)
+        exit_code := 141
+      | Failure msg ->
+        Printf.eprintf "Fatal error: %s\n" msg;
+        Printf.eprintf "%s" (OpamStd.Exn.pretty_backtrace e);
+      | _ ->
+        Printf.eprintf "Fatal error:\n%s\n" (Printexc.to_string e);
+        Printf.eprintf "%s" (OpamStd.Exn.pretty_backtrace e);
+    end;
+    exit !exit_code
