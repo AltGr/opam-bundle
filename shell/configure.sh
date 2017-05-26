@@ -9,6 +9,8 @@ if [ -d "$OPAMROOT/default" ]; then
 else
    title "Configure: initialising opam"
 
+   echo "Output is in $LOG"
+
    if [ ! -f "$OPAMROOT/config" ]; then
       logged_cmd "Initialising" opam init --bare --no-setup $DIR/repo
    fi
@@ -17,6 +19,7 @@ fi
 
 title "Configure: bootstrapping auxiliary utilities"
 
+echo "Output is in $LOG"
 logged_cmd "Compiling bootstrap utilities" opam install depext --yes
 
 title "Configure: getting system dependencies"

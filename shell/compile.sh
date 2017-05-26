@@ -17,6 +17,7 @@ if [ ! -e has_depexts ]; then "$DIR/configure.sh"; fi
 
 title "Compile: installing packages"
 
+echo "Output is in $LOG"
 logged_cmd "Compiling packages" opam install --yes %{install_packages}%
 logged_cmd "Cleaning up" opam clean --yes
 
@@ -27,7 +28,8 @@ if [ -z "$DESTDIR" ]; then
     echo "  - either re-run $0 with a PREFIX argument to install command wrappers"
     echo
     echo '  - or run "eval $(opam env --root '"$OPAMROOT"')" to update '
-    echo '    the environment in the current shell'
+    echo '    the environment in the current shell, so that they are in your PATH'
+    echo
     exit 0
 fi
 

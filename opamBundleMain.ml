@@ -598,7 +598,8 @@ let () =
     flush stdout;
     flush stderr;
     if (OpamConsole.debug ()) then
-      Printf.eprintf "'%s' failed.\n" (String.concat " " (Array.to_list Sys.argv));
+      Printf.eprintf "'%s' failed.\n"
+        (String.concat " " (Array.to_list Sys.argv));
     let exit_code = ref 1 in
     begin match e with
       | OpamStd.Sys.Exit i ->
