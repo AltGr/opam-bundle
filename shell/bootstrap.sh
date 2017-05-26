@@ -14,6 +14,7 @@ else
    logged_cmd "Compiling" make world world.opt
    logged_cmd "Installing to temp prefix" make install
    cd "$DIR"
+   rm -rf "ocaml-%{ocamlv}%"
 fi
 
 if [ -x "$PREFIX/bin/opam" ]; then
@@ -29,4 +30,5 @@ else
    logged_cmd "Compiling" make
    logged_cmd "Installing to temp prefix" make install
    cd "$DIR"
+   rm -rf $(basename "%{opam_archive}%" .tar.gz)
 fi

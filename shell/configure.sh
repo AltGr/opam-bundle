@@ -22,6 +22,7 @@ logged_cmd "Compiling bootstrap utilities" opam install depext --yes
 title "Configure: getting system dependencies"
 
 echo "You may be asked for 'sudo' access to install required system dependencies through your package system"
+echo
 opam depext %{install_packages}%
 
 touch has_depexts

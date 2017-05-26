@@ -12,7 +12,7 @@ logged_cmd() {
   echo "+ [ $1 ] $*" >>$LOG
   "$@" >>$LOG 2>&1
   echo >>$LOG
-  printf "\e[32mDone\e[m\n"
+  printf "\e[32mdone\e[m\n"
 }
 
 trap "if [ $? -ne 0 ]; then printf '\nSomething went wrong, see log in $LOG\n'; fi" EXIT

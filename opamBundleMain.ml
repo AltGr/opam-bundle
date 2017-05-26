@@ -247,14 +247,23 @@ let create_bundle ocamlv opamv repo debug output env test doc yes packages =
       available_packages = lazy (filter (Lazy.force st.available_packages));
     }
   in
-  let packages = OpamListCommand.filter ~base:st.packages st packages_filter in
-  if OpamPackage.Set.is_empty packages then
+  let include_packages =
+    OpamListCommand.filter ~base:st.packages st packages_filter
+  in
+  let install_packages =
+    OpamFormula.packages_of_atoms include_packages packages
+  in
+  if OpamPackage.Set.is_empty include_packages then
     OpamConsole.error_and_exit "No packages match the selection criteria";
   OpamConsole.msg "The following packages will be included:\n%s"
     (OpamStd.Format.itemize (fun nv ->
-         OpamConsole.colorise `bold (OpamPackage.name_to_string nv) ^"."^
+         let color =
+           if OpamPackage.Set.mem nv install_packages then [`bold; `underline]
+           else [`bold]
+         in
+         OpamConsole.colorise' color (OpamPackage.name_to_string nv) ^"."^
          OpamPackage.version_to_string nv)
-        (OpamPackage.Set.elements packages));
+        (OpamPackage.Set.elements include_packages));
   if not @@ OpamConsole.confirm "Continue ?" then
     OpamStd.Sys.exit 12;
   OpamConsole.header_msg "Getting all archives";
@@ -267,7 +276,12 @@ let create_bundle ocamlv opamv repo debug output env test doc yes packages =
   OpamFilename.mkdir target_repo;
   OpamFilename.mkdir target_cache;
   OpamFilename.mkdir target_links;
-  let repo_file = OpamFile.Repo.create ~dl_cache:[cache_dirname] () in
+  let repo_file =
+    OpamFile.Repo.create
+      ~opam_version:OpamVersion.current_nopatch
+      ~dl_cache:[cache_dirname]
+      ()
+  in
   OpamFile.Repo.write (OpamRepositoryPath.repo target_repo) repo_file;
   let target_dest f nv =
     f target_repo (Some (OpamPackage.name_to_string nv)) nv
@@ -287,7 +301,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes packages =
         OpamFilename.copy_dir
           ~src:files_dir
           ~dst:(target_dest OpamRepositoryPath.files nv))
-    packages;
+    include_packages;
   let pull_to_cache nv =
     let dl_job ?extra urlf =
       let link target =
@@ -367,7 +381,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes packages =
         match compare (Hashtbl.hash nv1) (Hashtbl.hash nv2) with
         | 0 -> compare nv1 nv2
         | n -> n)
-      (OpamPackage.Set.elements packages)
+      (OpamPackage.Set.elements include_packages)
   in
   OpamParallel.iter ~jobs:OpamStateConfig.(!r.dl_jobs)
     ~command:pull_to_cache
@@ -394,7 +408,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes packages =
       | "opam_archive" -> Some (S (OpamUrl.basename opam_url))
       | "install_packages" ->
         Some (S (OpamStd.List.concat_map " " OpamPackage.to_string
-                   (OpamPackage.Set.elements packages)))
+                   (OpamPackage.Set.elements install_packages)))
       | _ -> None
     in
     List.map (fun (name, script) ->
@@ -404,7 +418,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes packages =
   List.iter (fun (name, script) ->
       let file = OpamFilename.Op.(bundle_dir // name) in
       OpamFilename.write file script;
-      OpamFilename.chmod file 0o755)
+      if name <> "common.sh" then OpamFilename.chmod file 0o755)
     scripts;
   OpamProcess.Job.run @@
   OpamSystem.make_command ~dir:(OpamFilename.Dir.to_string tmp)
@@ -478,11 +492,15 @@ let yes_arg =
   Arg.(value & flag & info ["y";"yes"] ~doc:
          "Confirm all prompts without asking.")
 
+let self_extract_arg =
+  Arg.(value & flag & info ["self"] ~doc:
+         "Generate a self-extracting script besides the .tar.gz bundle")
+
 let packages_arg =
   Arg.(non_empty & pos_all OpamArg.atom [] & info [] ~docv:"PACKAGES" ~doc:
          "List of packages to include in the bundle. Their dependencies will \
-          be included in the bundle, but only these packages will be \
-          installed.")
+          be included in the bundle, but only these packages will have \
+          wrappers installed.")
 
 let man = [
   `S "DESCRIPTION";
@@ -490,6 +508,31 @@ let man = [
       bundle them together in a comprehensive source archive, with the scripts \
       needed to bootstrap OCaml, opam, and install the packages on a fresh, \
       network-less system.";
+  `P "The opam-depext plugin is included to try and get the required system \
+      dependencies on the target system (which might, in this case, require \
+      network, depending on the system configuration).";
+  `P "The generated bundle includes three scripts, each one calling the \
+      previous ones if necessary:";
+  `I ("$(i,bootstrap.sh)",
+      "Compiles OCaml and opam and gets them ready in a local prefix");
+  `I ("$(i,configure.sh)",
+      "Initialises an opam root within the bundle directory, and gets the \
+       required system depdendencies");
+  `I ("$(i,compile.sh)",
+      "Compiles the required packages using the bootstrapped opam. If a prefix \
+       was specified, and for packages listed on the command-line of $(tname), \
+       wrappers are installed to the prefix for installed binaries. These \
+       execute the programs within the in-bundle opam root, with the proper \
+       opam environment.");
+  `P "For example, assuming $(i,foo) is a package that installs a $(i,bar) \
+      binary, from a bundle generated using $(tname)$(b, foo), a user on a \
+      fresh system could run $(b,tar xzf foo-bundle.tar.gz && \
+      ./foo-bundle/compile.sh ~/local) to get a usable $(i,bar) binary within \
+      $(b,~/local/bin) (if the user does not have write permission to the \
+      given prefix, the script will use $(b,sudo)).";
+  `P "Note that the bundle itself should not be moved for the wrappers to keep \
+      working. Besides the wrappers, nothing is written outside of the \
+      directory where the bundle was untarred.";
 ]
 
 let create_bundle_command =
