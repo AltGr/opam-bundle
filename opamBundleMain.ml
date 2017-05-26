@@ -48,7 +48,8 @@ let opam_archive_url opamv =
 
 let output_extension = "tar.gz"
 
-let create_bundle ocamlv opamv repo debug output env test doc yes packages =
+let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
+    packages =
   OpamClientConfig.opam_init
     ~debug_level:(if debug then 1 else 0)
     ~answer:(if yes then Some true else None)
@@ -402,6 +403,9 @@ let create_bundle ocamlv opamv repo debug output env test doc yes packages =
           (OpamUrl.to_string opam_url) msg
       | Result () | Up_to_date () -> ());
   OpamConsole.header_msg "Building bundle";
+  let include_scripts =
+    ["common.sh"; "bootstrap.sh"; "configure.sh"; "compile.sh"]
+  in
   let scripts =
     let env v = match OpamVariable.Full.to_string v with
       | "ocamlv" -> Some (S (OpamPackage.Version.to_string ocamlv))
@@ -411,22 +415,62 @@ let create_bundle ocamlv opamv repo debug output env test doc yes packages =
                    (OpamPackage.Set.elements install_packages)))
       | _ -> None
     in
-    List.map (fun (name, script) ->
-        name, OpamFilter.expand_string env script)
-      OpamBundleScripts.all_scripts
+    List.map (fun name ->
+        name, OpamFilter.expand_string env
+          (List.assoc name OpamBundleScripts.all_scripts))
+      include_scripts
   in
-  List.iter (fun (name, script) ->
+  List.iter (fun name ->
+      let script = List.assoc name scripts in
       let file = OpamFilename.Op.(bundle_dir // name) in
       OpamFilename.write file script;
       if name <> "common.sh" then OpamFilename.chmod file 0o755)
-    scripts;
-  OpamProcess.Job.run @@
-  OpamSystem.make_command ~dir:(OpamFilename.Dir.to_string tmp)
-    "tar" ["czf"; OpamFilename.to_string output; bundle_name] @@> fun result ->
-  OpamSystem.raise_on_process_error result;
-  OpamConsole.msg "Done. Bundle generated as %s\n"
-    (OpamFilename.to_string output);
-  Done ()
+    include_scripts;
+  OpamProcess.Job.run
+    (OpamSystem.make_command ~dir:(OpamFilename.Dir.to_string tmp)
+       "tar" ["czf"; OpamFilename.to_string output; bundle_name]
+     @@> fun result ->
+     OpamSystem.raise_on_process_error result;
+     OpamConsole.msg "Done. Bundle generated as %s\n"
+       (OpamFilename.to_string output);
+     Done ());
+  if self_extract then
+    let file =
+      OpamFilename.of_string
+        (OpamFilename.remove_suffix
+           (OpamFilename.Base.of_string ("."^output_extension))
+           output
+         ^ ".sh")
+    in
+    let script = OpamBundleScripts.self_extract_sh in
+    let blocksize = 512 in
+    let rec count_blocks blocks =
+      let env v = match OpamVariable.Full.to_string v with
+        | "blocksize" -> Some (S (string_of_int blocksize))
+        | "blocks" -> Some (S (string_of_int blocks))
+        | _ -> None
+      in
+      let s = OpamFilter.expand_string env script in
+      if String.length s > blocksize * blocks then count_blocks (blocks + 1)
+      else s, blocks
+    in
+    let script, blocks = count_blocks 1 in
+    let ic = open_in (OpamFilename.to_string output) in
+    let oc = open_out (OpamFilename.to_string file) in
+    output_string oc script;
+    seek_out oc (blocksize * blocks);
+    let sz = 4096 in
+    let buf = Bytes.create sz in
+    let rec copy () =
+      let len = input ic buf 0 sz in
+      if len <> 0 then (Pervasives.output oc buf 0 len; copy ())
+    in
+    copy ();
+    close_in ic;
+    close_out oc;
+    OpamFilename.chmod file 0o755;
+    OpamConsole.msg "Self-extracting archive generated as %s\n"
+      (OpamFilename.to_string file)
 
 
 (* -- command-line handling -- *)
@@ -538,6 +582,7 @@ let man = [
 let create_bundle_command =
   Term.(pure create_bundle $ ocamlv_arg $ opamv_arg $ repo_arg $ debug_arg $
         output_arg $ env_arg $ with_test_arg $ with_doc_arg $ yes_arg $
+        self_extract_arg $
         packages_arg),
   Term.info "opam-bundle" ~man ~doc:
     "Creates standalone source bundle from opam packages"

@@ -6,7 +6,7 @@ opam-bundle: opamBundleScripts.ml opamBundleMain.ml
 opam-bundle.install:
 	echo 'bin: "opam-bundle"' >$@
 
-opamBundleScripts.ml: shell/common.sh shell/bootstrap.sh shell/configure.sh shell/compile.sh
+opamBundleScripts.ml: shell/common.sh shell/bootstrap.sh shell/configure.sh shell/compile.sh shell/self_extract.sh
 	ocaml ./crunch.ml $^ > $@
 
 .PHONY:clean install
