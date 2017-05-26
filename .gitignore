@@ -2,5 +2,5 @@ opam-bundle
 *.*a
 *.cm*
 *.o
-opamBundleScripts.ml
+src/opamBundleScripts.ml
 *.install
