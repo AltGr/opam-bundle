@@ -11,7 +11,7 @@ bug-reports: "https://github.com/AltGr/opam-bundle/issues"
 depends: [
   "ocamlfind"
   "cmdliner"
-  "opam-client" {>= "2.0.0~beta4"}
+  "opam-client" {>= "2.0.0~beta3.1"}
 ]
 flags: plugin
 build: make
