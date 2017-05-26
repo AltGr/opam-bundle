@@ -36,8 +36,23 @@ let exclude_packages ocamlv = [
   OpamPackage.Name.of_string "ocaml-variants", None;
 ]
 
-let create_bundle ocamlv opamv repo debug output env test doc packages =
-  OpamClientConfig.opam_init ~debug_level:(if debug then 1 else 0) ();
+let opam_archive_url opamv =
+  let tag =
+    OpamStd.String.map (function '~' -> '-' | c -> c)
+      (OpamPackage.Version.to_string opamv)
+  in
+  Printf.sprintf
+    "https://github.com/ocaml/opam/releases/download/%s/opam-full-%s.tar.gz"
+    tag tag
+  |> OpamUrl.of_string
+
+let output_extension = "tar.gz"
+
+let create_bundle ocamlv opamv repo debug output env test doc yes packages =
+  OpamClientConfig.opam_init
+    ~debug_level:(if debug then 1 else 0)
+    ~answer:(if yes then Some true else None)
+    ();
   let ocamlv = match ocamlv with
     | Some v -> v
     | None ->
@@ -50,6 +65,26 @@ let create_bundle ocamlv opamv repo debug output env test doc packages =
       OpamConsole.msg "No OCaml version selected, will use %s.\n"
         (OpamConsole.colorise `bold @@ OpamPackage.Version.to_string v);
       v
+  in
+  let opamv = match opamv with
+    | Some v -> v
+    | None -> OpamPackage.Version.of_string "2.0.0~beta3"
+  in
+  let output = match output, packages with
+    | Some f, _ ->
+      if String.contains (OpamFilename.(Base.to_string (basename f))) '.'
+      then OpamFilename.add_extension f output_extension
+      else f
+    | None, (name, _)::_ ->
+      OpamFilename.of_string
+        (OpamPackage.Name.to_string name ^"-bundle."^output_extension)
+    | None, [] -> assert false
+  in
+  let bundle_name =
+    Filename.basename @@
+    OpamFilename.remove_suffix
+      (OpamFilename.Base.of_string ("."^output_extension))
+      output
   in
   let env =
     match env with
@@ -167,18 +202,6 @@ let create_bundle ocamlv opamv repo debug output env test doc packages =
   in
   if not success then
     OpamConsole.error_and_exit "Could not fetch the repositories";
-(*
-  OpamParallel.iter ~jobs:OpamStateConfig.(!r.dl_jobs)
-    ~command:(fun repo ->
-        let text =
-          OpamProcess.make_command_text ~color:`blue
-            (OpamRepositoryName.to_string repo.repo_name)
-            OpamUrl.(string_of_backend repo.repo_url.backend)
-        in
-        OpamProcess.Job.with_text text @@
-        OpamRepository.update repo)
-    (OpamRepositoryName.Map.values repos_map);
-*)
   OpamConsole.header_msg "Resolving package set";
   let st =
     OpamSwitchState.load_virtual ~repos_list gt rt
@@ -235,11 +258,11 @@ let create_bundle ocamlv opamv repo debug output env test doc packages =
   if not @@ OpamConsole.confirm "Continue ?" then
     OpamStd.Sys.exit 12;
   OpamConsole.header_msg "Getting all archives";
-  let bundle_dir = OpamFilename.Op.(tmp / "bundle") in
+  let bundle_dir = OpamFilename.Op.(tmp / bundle_name) in
   let target_repo = OpamFilename.Op.(bundle_dir / "repo") in
   let cache_dirname = "cache" in
   let target_cache = OpamFilename.Op.(target_repo / cache_dirname) in
-  let links_dirname = "archive" in
+  let links_dirname = "archives" in
   let target_links = OpamFilename.Op.(target_repo / links_dirname) in
   OpamFilename.mkdir target_repo;
   OpamFilename.mkdir target_cache;
@@ -283,36 +306,41 @@ let create_bundle ocamlv opamv repo debug output env test doc packages =
           (match extra with None -> "Source" | Some n -> "Extra source "^n)
           (OpamPackage.to_string nv) (OpamUrl.to_string (OpamFile.URL.url urlf))
       in
+      let name = match extra with
+        | None -> OpamPackage.to_string nv
+        | Some s -> Printf.sprintf "%s/%s" (OpamPackage.name_to_string nv) s
+      in
       match OpamFile.URL.checksum urlf with
       | [] ->
         OpamFilename.with_tmp_dir_job @@ fun dldir ->
         let f = OpamFilename.Op.(dldir // OpamPackage.to_string nv) in
-        OpamDownload.download_as ~overwrite:false (OpamFile.URL.url urlf) f
-        @@| fun () ->
-        let hash = OpamHash.compute (OpamFilename.to_string f) in
-        let dst = OpamRepository.cache_file target_cache hash in
-        OpamFilename.move ~src:f ~dst;
-        OpamConsole.warning
-          "%s had no recorded checksum: adding %s"
-          source_string (OpamHash.to_string hash);
-        link dst;
-        OpamFile.URL.with_checksum [hash] urlf
+        OpamRepository.pull_file name f []
+          (OpamFile.URL.url urlf :: OpamFile.URL.mirrors urlf)
+        @@| (function
+            | Not_available msg ->
+              OpamConsole.error_and_exit "%s could not be obtained: %s"
+                source_string msg
+            | Result () | Up_to_date () ->
+              let hash = OpamHash.compute (OpamFilename.to_string f) in
+              let dst = OpamRepository.cache_file target_cache hash in
+              OpamFilename.move ~src:f ~dst;
+              OpamConsole.warning
+                "%s had no recorded checksum: adding %s"
+                source_string (OpamHash.to_string hash);
+              link dst;
+              OpamFile.URL.with_checksum [hash] urlf)
       | (hash::_) as cksums ->
-        let name = match extra with
-          | None -> OpamPackage.to_string nv
-          | Some s -> Printf.sprintf "%s/%s" (OpamPackage.name_to_string nv) s
-        in
         let dst = OpamRepository.cache_file target_cache hash in
         OpamRepository.pull_file_to_cache name
           ~cache_dir:target_cache ~cache_urls:dl_cache cksums
           (OpamFile.URL.url urlf :: OpamFile.URL.mirrors urlf)
-        @@| function
-        | Not_available msg ->
-          OpamConsole.error_and_exit "%s could not be obtained: %s"
-            source_string msg
-        | Result _ | Up_to_date _ ->
-          link dst;
-          urlf
+        @@| (function
+            | Not_available msg ->
+              OpamConsole.error_and_exit "%s could not be obtained: %s"
+                source_string msg
+            | Result () | Up_to_date () ->
+              link dst;
+              urlf)
     in
     let opam = OpamSwitchState.opam st nv in
     let opam0 = opam in
@@ -345,8 +373,47 @@ let create_bundle ocamlv opamv repo debug output env test doc packages =
     ~command:pull_to_cache
     randomised_pkglist;
   OpamConsole.header_msg "Getting bootstrap packages";
+  let opam_url = opam_archive_url opamv in
+  let opam_archive =
+    OpamFilename.Op.(bundle_dir // OpamUrl.basename opam_url)
+  in
+  OpamProcess.Job.run @@
+  OpamRepository.pull_file (OpamUrl.basename opam_url) opam_archive
+    [(*todo:checksums*)]
+    [opam_url]
+  @@| (function
+      | Not_available msg ->
+        OpamConsole.error_and_exit
+          "Opam archive at %s could not be obtained: %s"
+          (OpamUrl.to_string opam_url) msg
+      | Result () | Up_to_date () -> ());
   OpamConsole.header_msg "Building bundle";
-  failwith "the end"
+  let scripts =
+    let env v = match OpamVariable.Full.to_string v with
+      | "ocamlv" -> Some (S (OpamPackage.Version.to_string ocamlv))
+      | "opam_archive" -> Some (S (OpamUrl.basename opam_url))
+      | "install_packages" ->
+        Some (S (OpamStd.List.concat_map " " OpamPackage.to_string
+                   (OpamPackage.Set.elements packages)))
+      | _ -> None
+    in
+    List.map (fun (name, script) ->
+        name, OpamFilter.expand_string env script)
+      OpamBundleScripts.all_scripts
+  in
+  List.iter (fun (name, script) ->
+      let file = OpamFilename.Op.(bundle_dir // name) in
+      OpamFilename.write file script;
+      OpamFilename.chmod file 0o755)
+    scripts;
+  OpamProcess.Job.run @@
+  OpamSystem.make_command ~dir:(OpamFilename.Dir.to_string tmp)
+    "tar" ["czf"; OpamFilename.to_string output; bundle_name] @@> fun result ->
+  OpamSystem.raise_on_process_error result;
+  OpamConsole.msg "Done. Bundle generated as %s\n"
+    (OpamFilename.to_string output);
+  Done ()
+
 
 (* -- command-line handling -- *)
 
@@ -364,8 +431,8 @@ let ocamlv_arg =
          "Select a version of OCaml to include. It will be used for \
           bootstrapping, and must be able to compile opam.")
 
-let opam_arg =
-  Arg.(value & opt (some string) None & info ["opam"] ~doc:
+let opamv_arg =
+  Arg.(value & opt (some pkg_version_conv) None & info ["opam"] ~doc:
          "Select a version of opam to include. That version must be released \
           with an upstream \"full-archive\" available online, and be at least \
           2.0.0~beta3, to support all the required features.")
@@ -407,6 +474,10 @@ let with_doc_arg =
   Arg.(value & flag & info ["d";"with-doc"] ~doc:
          "Include the packages' doc-only dependencies in the bundle.")
 
+let yes_arg =
+  Arg.(value & flag & info ["y";"yes"] ~doc:
+         "Confirm all prompts without asking.")
+
 let packages_arg =
   Arg.(non_empty & pos_all OpamArg.atom [] & info [] ~docv:"PACKAGES" ~doc:
          "List of packages to include in the bundle. Their dependencies will \
@@ -422,8 +493,9 @@ let man = [
 ]
 
 let create_bundle_command =
-  Term.(pure create_bundle $ ocamlv_arg $ opam_arg $ repo_arg $ debug_arg $
-        output_arg $ env_arg $ with_test_arg $ with_doc_arg $ packages_arg),
+  Term.(pure create_bundle $ ocamlv_arg $ opamv_arg $ repo_arg $ debug_arg $
+        output_arg $ env_arg $ with_test_arg $ with_doc_arg $ yes_arg $
+        packages_arg),
   Term.info "opam-bundle" ~man ~doc:
     "Creates standalone source bundle from opam packages"
 
