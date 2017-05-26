@@ -1,0 +1,6 @@
+opam-bundle
+*.*a
+*.cm*
+*.o
+opamBundleScripts.ml
+*.install
