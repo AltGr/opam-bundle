@@ -18,7 +18,7 @@ if [ ! -e has_depexts ]; then "$DIR/configure.sh"; fi
 title "Compile: installing packages"
 
 echo "Output is in $LOG"
-logged_cmd "Compiling packages" opam install --yes %{install_packages}%
+logged_cmd "Compiling packages" opam install --yes %{install_packages}% %{doc?--with-doc:}% %{test?--with-test:}%
 logged_cmd "Cleaning up" opam clean --yes
 
 if [ -z "$DESTDIR" ]; then

@@ -413,6 +413,8 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       | "install_packages" ->
         Some (S (OpamStd.List.concat_map " " OpamPackage.to_string
                    (OpamPackage.Set.elements install_packages)))
+      | "doc" -> Some (B doc)
+      | "test" -> Some (B test)
       | _ -> None
     in
     List.map (fun name ->
@@ -526,11 +528,13 @@ let env_arg =
 
 let with_test_arg =
   Arg.(value & flag & info ["t";"with-test"] ~doc:
-         "Include the packages' test-only dependencies in the bundle.")
+         "Include the packages' test-only dependencies in the bundle, and make \
+          the bundle run the tests on installation.")
 
 let with_doc_arg =
   Arg.(value & flag & info ["d";"with-doc"] ~doc:
-         "Include the packages' doc-only dependencies in the bundle.")
+         "Include the packages' doc-only dependencies in the bundle, and \
+          make the bundle generate their documentation.")
 
 let yes_arg =
   Arg.(value & flag & info ["y";"yes"] ~doc:
