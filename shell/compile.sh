@@ -33,11 +33,11 @@ if [ -z "$DESTDIR" ]; then
     exit 0
 fi
 
-if [ ! -w "$DESTDIR/bin" ] || ! mkdir -p "$DESTDIR/bin" >/dev/null 2>&1; then
+if [ -w "$DESTDIR/bin" ] || mkdir -p "$DESTDIR/bin" >/dev/null 2>&1 && [ -w "$DESTDIR/bin" ]; then
+    SUDO=""
+else
     echo "No write access to $DESTDIR/bin, will use 'sudo'."
     SUDO="sudo --"
-else
-    SUDO=""
 fi
 bin_prefix=$(opam var bin)
 opam show --list-files %{install_packages}% | grep "^$bin_prefix" | $SUDO sh -uec "
