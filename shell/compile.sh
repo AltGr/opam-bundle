@@ -35,22 +35,24 @@ fi
 
 if [ ! -w "$DESTDIR/bin" ] || ! mkdir -p "$DESTDIR/bin" >/dev/null 2>&1; then
     echo "No write access to $DESTDIR/bin, will use 'sudo'."
-    SUDO="sudo"
-    $SUDO mkdir -p "$DESTDIR/bin"
+    SUDO="sudo --"
 else
     SUDO=""
 fi
 bin_prefix=$(opam var bin)
-opam show --list-files %{install_packages}% | grep "^$bin_prefix" | while read -r bin; do
-    WRAPPER="$DESTDIR/bin/$(basename $bin)"
-    if [ -e "$WRAPPER" ]; then
-        echo "Warning: $WRAPPER exists already, not overwriting."
+opam show --list-files %{install_packages}% | grep "^$bin_prefix" | $SUDO sh -uec "
+  mkdir -p '$DESTDIR/bin'
+  while read -r bin; do
+    WRAPPER=\"$DESTDIR/bin/\$(basename \"\$bin\")\"
+    if [ -e \"\$WRAPPER\" ]; then
+        echo \"Warning: \$WRAPPER exists already, not overwriting.\"
     else
-        cat <<EOF | $SUDO tee "$WRAPPER" >/dev/null
+        cat <<EOF >\"\$WRAPPER\"
 #!/bin/sh -e
-exec "$PREFIX/bin/opam" exec --root "$OPAMROOT" -- "$bin" "\$@"
+exec \"$PREFIX/bin/opam\" exec --root \"$OPAMROOT\" -- \"\$bin\" \"\\\$@\"
 EOF
-        $SUDO chmod a+x "$WRAPPER"
-        printf "Wrapper \e[1m$(basename $bin)\e[m installed successfully.\n"
+        chmod a+x \"\$WRAPPER\"
+        printf \"Wrapper \\e[1m\$(basename \$bin)\\e[m installed successfully.\\n\"
     fi
-done
+  done
+"
