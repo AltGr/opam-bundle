@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "opam-bundle"
-version: "0.1"
+version: "0.2"
 synopsis: "A tool that creates stand-alone source bundles from opam packages"
 maintainer: "Louis Gesbert <louis.gesbert@ocamlpro.com>"
 authors: "Louis Gesbert <louis.gesbert@ocamlpro.com>"
