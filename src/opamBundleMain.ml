@@ -15,7 +15,8 @@ open OpamProcess.Job.Op
 
 let bootstrap_packages ocamlv = [
   OpamPackage.Name.of_string "ocaml-base-compiler", Some (`Eq, ocamlv);
-  OpamPackage.Name.of_string "depext", None;
+  OpamPackage.Name.of_string "depext",
+  Some (`Geq, OpamPackage.Version.of_string "1.0.4");
 ]
 
 let additional_user_packages ocamlv = [
