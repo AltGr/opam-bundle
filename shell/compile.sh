@@ -52,7 +52,7 @@ opam show --list-files %{install_packages}% | grep "^$bin_prefix" | $SUDO sh -ue
     else
         cat <<EOF >\"\$WRAPPER\"
 #!/bin/sh -e
-exec \"$PREFIX/bin/opam\" exec --root \"$OPAMROOT\" -- \"\$bin\" \"\\\$@\"
+exec \"$PREFIX/bin/opam\" exec --root \"$OPAMROOT\" --readonly -- \"\$bin\" \"\\\$@\"
 EOF
         chmod a+x \"\$WRAPPER\"
         printf \"Wrapper \\033[1m\$(basename \$bin)\\033[m installed successfully.\\n\"
