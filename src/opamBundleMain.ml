@@ -197,12 +197,13 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
         repos_map;
     repo_opams = OpamRepositoryName.Map.empty;
   } in
-  let success, rt =
+  let failed, rt =
     OpamRepositoryCommand.update_with_auto_upgrade rt
       (OpamRepositoryName.Map.keys repos_map)
   in
-  if not success then
-    OpamConsole.error_and_exit "Could not fetch the repositories";
+  if failed <> [] then
+    OpamConsole.error_and_exit "Could not fetch these repositories: %s"
+      (OpamStd.List.to_string OpamRepositoryName.to_string failed);
   OpamConsole.header_msg "Resolving package set";
   let st =
     OpamSwitchState.load_virtual ~repos_list gt rt
