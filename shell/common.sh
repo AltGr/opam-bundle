@@ -15,7 +15,13 @@ logged_cmd() {
   printf "\033[32mdone\033[m\n"
 }
 
-trap "if [ $? -ne 0 ]; then printf '\nSomething went wrong, see log in $LOG\n'; fi" EXIT
+start() {
+  trap "printf '\nSomething went wrong, see log in $LOG\n'" EXIT
+}
+
+finished() {
+  trap - EXIT
+}
 
 export PATH="$PREFIX/bin:$PATH"
 export CAML_LD_LIBRARY_PATH="$PREFIX/lib/ocaml/stublibs"

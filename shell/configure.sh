@@ -1,8 +1,10 @@
 #!/bin/sh -ue
 
-. $(dirname $0)/common.sh
+. "$(dirname "$0")/common.sh"
 
 "$DIR/bootstrap.sh"
+
+start
 
 if [ -d "$OPAMROOT/default" ]; then
    echo "Already initialised opam sandbox found"
@@ -29,3 +31,4 @@ echo
 opam depext %{install_packages}%
 
 touch has_depexts
+finished

@@ -2,6 +2,8 @@
 
 . "$(dirname "$0")/common.sh"
 
+start
+
 if [ -x "$PREFIX/bin/ocamlc" ]; then
    echo "Already compiled OCaml found"
 else
@@ -32,3 +34,5 @@ else
    cd "$DIR"
    rm -rf $(basename "%{opam_archive}%" .tar.gz)
 fi
+
+finished

@@ -1,6 +1,6 @@
 #!/bin/sh -ue
 
-. $(dirname $0)/common.sh
+. "$(dirname "$0")/common.sh"
 
 if [ $# -eq 0 ]; then
     DESTDIR=
@@ -14,6 +14,8 @@ else
 fi
 
 if [ ! -e has_depexts ]; then "$DIR/configure.sh"; fi
+
+start
 
 title "Compile: installing packages"
 
@@ -30,6 +32,7 @@ if [ -z "$DESTDIR" ]; then
     echo '  - or run "eval $(opam env --root '"$OPAMROOT"')" to update '
     echo '    the environment in the current shell, so that they are in your PATH'
     echo
+    finished
     exit 0
 fi
 
@@ -56,3 +59,4 @@ EOF
     fi
   done
 "
+finished
