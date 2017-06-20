@@ -4,6 +4,38 @@
 
 start
 
+title "Bootstrap: checking for prerequisites"
+
+MISSING=
+check_prereq() {
+    NAME="$1"
+    printf "Checking for $*... "
+    while [ $# -gt 0 ]; do
+        if type "$1" >/dev/null 2>&1 ; then break; fi
+        shift
+    done
+    if [ $# -gt 0 ]; then
+        printf "\033[32mfound\033[m\n"
+    else
+        printf "\033[31mnot found\033[m\n"
+        MISSING="$MISSING $NAME"
+    fi
+}
+check_prereq cc
+check_prereq make
+check_prereq wget curl
+check_prereq patch
+check_prereq unzip
+check_prereq bunzip2
+check_prereq rsync
+
+if [ -n "$MISSING" ]; then
+    printf "This source bundle requires the following tools to bootstrap, and they are\n"
+    printf "absent from this system. Please install them first:\n   $MISSING\n\n"
+    finished
+    exit 10
+fi
+
 if [ -x "$PREFIX/bin/ocamlc" ]; then
    echo "Already compiled OCaml found"
 else
