@@ -29,8 +29,9 @@ if [ -z "$DESTDIR" ]; then
     echo
     echo "  - either re-run $0 with a PREFIX argument to install command wrappers"
     echo
-    echo '  - or run "eval $(opam env --root '"$OPAMROOT"')" to update '
-    echo '    the environment in the current shell, so that they are in your PATH'
+    echo '  - or run the following to update the environment in the current shell, so that'
+    echo '    they are in your PATH:'
+    echo "      export PATH=\"$PREFIX/bin:\$PATH\"; eval \$(opam env --root \"$OPAMROOT\")"
     echo
     finished
     exit 0
@@ -52,6 +53,7 @@ opam show --list-files %{install_packages}% | grep "^$bin_prefix" | $SUDO sh -ue
     else
         cat <<EOF >\"\$WRAPPER\"
 #!/bin/sh -e
+export PATH=\"$PREFIX/bin:\$PATH\"
 exec \"$PREFIX/bin/opam\" exec --root \"$OPAMROOT\" --readonly -- \"\$bin\" \"\\\$@\"
 EOF
         chmod a+x \"\$WRAPPER\"
