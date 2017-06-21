@@ -29,7 +29,16 @@ title "Configure: getting system dependencies"
 echo "You may be asked for 'sudo' access to install required system dependencies"
 echo "through your package system"
 echo
-opam depext %{install_packages}%
-
-touch has_depexts
-finished
+if opam depext %{install_packages}%; then
+  touch has_depexts
+  finished
+else
+  REQUIRED=$(opam depext %{install_packages}% --list --short)
+  if [ -z "$REQUIRED" ]; then touch has_depexts; finished; exit 0; fi
+  echo "These required system dependencies could not be automatically installed:"
+  for p in $REQUIRED; do echo "  - $p"; done
+  echo
+  echo "Please install them and retry this script.";
+  finished
+  exit 1
+fi
