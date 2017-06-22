@@ -4,3 +4,6 @@
 - fixed calls to `sudo`
 - fixed escaping bugs on some versions of dash (and probably other shells too)
 - fixed nested error messages
+- list inferred system packages for user to take over if automatic installation fails
+- on generation, print the resulting host system constraints together with the package selection
+- allow specifying `package@URL` to bundle specific package sources, independently of repositories
