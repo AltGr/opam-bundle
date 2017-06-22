@@ -238,7 +238,13 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     OpamConsole.error_and_exit
       "The following packages do not exist in the specified repositories, or \
        are not available with the given configuration:\n%s"
-      (OpamStd.Format.itemize OpamFormula.string_of_atom unavailable);
+      (OpamStd.Format.itemize
+         (fun (name, cstr as atom) ->
+            Printf.sprintf "%s: %s"
+              (OpamFormula.short_string_of_atom atom)
+              (OpamSwitchState.unavailable_reason st ~default:"not found"
+                 (name, match cstr with None -> OpamFormula.Empty | Some c -> Atom c)))
+         unavailable);
   let st = (* this is just an optimisation, to relieve the solver *)
     let filter =
       let excl =
@@ -569,8 +575,9 @@ let env_arg =
           comma-separated 'var=value' bindings, when resolving variables. This \
           is used when computing the set of available packages: if undefined, \
           a set of predefined variables based on the current system is used. \
-          If set without argument, an empty environment is used and \
-          availability of packages is not taken into account.")
+          If set without argument, an empty environment is used: this can be \
+          used to ensure the generated bundle won't have arch or OS \
+          constraints.")
 
 let with_test_arg =
   Arg.(value & flag & info ["t";"with-test"] ~doc:
