@@ -50,11 +50,12 @@ let opam_archive_url opamv =
 let output_extension = "tar.gz"
 
 let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
-    packages =
+    packages_targets =
   OpamClientConfig.opam_init
     ~debug_level:(if debug then 1 else 0)
     ~answer:(if yes then Some true else None)
     ();
+  let packages = List.map fst packages_targets in
   let ocamlv = match ocamlv with
     | Some v -> v
     | None ->
@@ -142,24 +143,24 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   let repos_dir = OpamFilename.Op.(tmp / "repos") in
   (* *** *)
   OpamConsole.header_msg "Initialising repositories";
+  let gen_repo_name repos_map base =
+    let rec uniq i =
+      let name =
+        OpamRepositoryName.of_string
+          (Printf.sprintf "%s%s" base
+             (if i = 0 then "" else string_of_int i))
+      in
+      if OpamRepositoryName.Map.mem name repos_map then uniq (i+1)
+      else name
+    in
+    uniq 0
+  in
   let repos_list_rev, repos_map =
     List.fold_left (fun (repos_list_rev, repos_map) url ->
         let name =
-          let repo_name =
-            match OpamStd.String.split url.OpamUrl.path '/' with
-            | s::_ -> s
-            | [] -> "repository"
-          in
-          let rec uniq i =
-            let name =
-              OpamRepositoryName.of_string
-                (Printf.sprintf "%s%s" repo_name
-                   (if i = 0 then "" else string_of_int i))
-            in
-            if OpamRepositoryName.Map.mem name repos_map then uniq (i+1)
-            else name
-          in
-          uniq 0
+          match OpamStd.String.split url.OpamUrl.path '/' with
+          | s::_ -> gen_repo_name repos_map s
+          | [] -> gen_repo_name repos_map "repository"
         in
         let repo = {
           repo_root =
@@ -207,6 +208,151 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   if failed <> [] then
     OpamConsole.error_and_exit "Could not fetch these repositories: %s"
       (OpamStd.List.to_string OpamRepositoryName.to_string failed);
+  (* *** *)
+  let rt, repos_list, virtual_pins =
+    if List.for_all (fun (_,target) -> target = None) packages_targets then
+      rt, repos_list, OpamPackage.Map.empty
+    else
+    let srcs = OpamFilename.Op.(tmp / "sources") in
+    OpamConsole.header_msg "Getting external packages";
+    let repo_name = gen_repo_name rt.repositories "custom" in
+    let pkgs_urls =
+      OpamStd.List.filter_map (function
+          | _, None -> None
+          | (name, None), Some target -> Some ((name, None), target)
+          | (name, Some (`Eq, v)), Some target ->
+            Some ((name, Some v), target)
+          | _ -> invalid_arg "Only equality constraints are supported")
+        packages_targets
+    in
+    let pkgs_src =
+      OpamParallel.map ~jobs:OpamStateConfig.(!r.dl_jobs)
+        ~command:(fun ((name, v), url) ->
+            let srcdir =
+              OpamFilename.Op.(srcs / OpamPackage.Name.to_string name)
+            in
+            OpamRepository.pull_tree (OpamPackage.Name.to_string name)
+              srcdir [] [url] @@| function
+            | Not_available s ->
+              OpamConsole.error_and_exit "Could not obtain %s from %s: %s"
+                (OpamPackage.Name.to_string name)
+                (OpamUrl.to_string url)
+                s
+            | Up_to_date _ | Result _ -> (name, v), srcdir)
+        pkgs_urls
+    in
+    let pkgs_opams_archives =
+      pkgs_src |> List.map @@ fun ((name, v), src) ->
+      let allpkgs () =
+        OpamRepositoryName.Map.fold
+          (fun _ m s -> OpamPackage.Set.union (OpamPackage.keys m) s)
+          rt.repo_opams OpamPackage.Set.empty
+      in
+      let nv, opam =
+        match OpamPinned.find_opam_file_in_source name src with
+        | Some f ->
+          OpamConsole.note
+            "Will use package definition found in source for %s"
+            (OpamPackage.Name.to_string name);
+          let o = OpamFile.OPAM.read f in
+          let o = OpamFormatUpgrade.opam_file ~filename:f o in
+          let v =
+            match v, OpamFile.OPAM.version_opt o with
+            | Some v_user, Some v_pkg when v_user <> v_pkg ->
+              OpamConsole.warning
+                "The package declares itself as version %s, but will use %s, \
+                 as specified"
+                (OpamPackage.Version.to_string v_pkg)
+                (OpamPackage.Version.to_string v_user);
+              v_user
+            | Some v, _ | _, Some v -> v
+            | None, None ->
+              let v =
+                try OpamPackage.version
+                      (OpamPackage.max_version (allpkgs ()) name)
+                with Not_found -> OpamPackage.Version.of_string "~dev"
+              in
+              OpamConsole.warning
+                "No version information found for %s. Will use %s"
+                (OpamPackage.Name.to_string name)
+                (OpamPackage.Version.to_string v);
+              v
+          in
+          OpamPackage.create name v, OpamFile.OPAM.with_version v o
+        | None ->
+          match v with
+          | Some v ->
+            (let nv = OpamPackage.create name v in
+             match OpamRepositoryState.find_package_opt rt repos_list nv with
+             | Some (repo, o) ->
+               OpamConsole.note
+                 "Sources for %s don't contain a package definition, will use \
+                  the one found in the repository at %s"
+                 (OpamPackage.to_string nv)
+                 (OpamUrl.to_string
+                   (OpamRepositoryName.Map.find repo rt.repositories).repo_url);
+               nv, o
+             | None ->
+               OpamConsole.error_and_exit
+                 "Specified sources for %s don't contain a package definition, \
+                  and none was found in the repositories"
+                 (OpamPackage.to_string nv)
+                 (* note: we could improve by allowing to lookup current
+                    pins at this point *))
+          | None ->
+            try
+              let nv = OpamPackage.max_version (allpkgs ()) name in
+              match OpamRepositoryState.find_package_opt rt repos_list nv with
+              | Some (repo, o) ->
+                OpamConsole.note
+                  "Sources for %s don't contain a package definition, will \
+                   assume version %s and use metadata and build instructions \
+                   from the repository at %s"
+                (OpamPackage.Name.to_string name)
+                (OpamConsole.colorise `bold (OpamPackage.version_to_string nv))
+                (OpamUrl.to_string
+                   (OpamRepositoryName.Map.find repo rt.repositories).repo_url);
+                nv, o
+              | None -> assert false
+            with Not_found ->
+              OpamConsole.error_and_exit
+                "Specified sources for %s don't contain a package definition, \
+                 and none was found in the repositories"
+                (OpamPackage.Name.to_string name)
+      in
+      let archive =
+        OpamFilename.Op.(srcs // (OpamPackage.to_string nv^".tar.gz"))
+      in
+      OpamFilename.mkdir (OpamFilename.dirname archive);
+      OpamProcess.Job.run @@
+      OpamSystem.make_command "tar"
+        ~dir:(OpamFilename.Dir.to_string srcs)
+        ["czf"; OpamFilename.to_string archive;
+         OpamFilename.remove_prefix_dir srcs src]
+      @@> (fun r -> Done (OpamSystem.raise_on_process_error r));
+      nv, opam, archive
+    in
+    let opams =
+      List.fold_left
+        (fun set (nv, opam, _) -> OpamPackage.Map.add nv opam set)
+        OpamPackage.Map.empty
+        pkgs_opams_archives
+    in
+    { rt with
+      repo_opams = OpamRepositoryName.Map.add repo_name opams rt.repo_opams; },
+    repo_name :: repos_list,
+    List.fold_left (fun acc (nv,_,archive) ->
+        OpamPackage.Map.add nv archive acc)
+      OpamPackage.Map.empty pkgs_opams_archives
+  in
+  let packages =
+    (* Enforce the pinned-to versions in the request *)
+    let pins = OpamPackage.keys virtual_pins in
+    List.map (fun (name, _ as at) ->
+        try (name, (Some (`Eq, (OpamPackage.package_of_name pins name).version)))
+        with Not_found -> at)
+      packages
+  in
   (* *** *)
   OpamConsole.header_msg "Resolving package set";
   let st =
@@ -353,18 +499,18 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
           ~dst:(target_dest OpamRepositoryPath.files nv))
     include_packages;
   let pull_to_cache nv =
-    let dl_job ?extra urlf =
-      let link target =
-        let name =
-          OpamStd.Option.default
-            (OpamUrl.basename (OpamFile.URL.url urlf))
-            extra
-        in
-        let link =
-          OpamFilename.Op.(target_links / OpamPackage.to_string nv // name)
-        in
-        OpamFilename.link ~relative:true ~target ~link
+    let link ?extra urlf target =
+      let name =
+        OpamStd.Option.default
+          (OpamUrl.basename (OpamFile.URL.url urlf))
+          extra
       in
+      let link =
+        OpamFilename.Op.(target_links / OpamPackage.to_string nv // name)
+      in
+      OpamFilename.link ~relative:true ~target ~link
+    in
+    let dl_job ?extra urlf =
       let source_string =
         Printf.sprintf "%s of %s from %s"
           (match extra with None -> "Source" | Some n -> "Extra source "^n)
@@ -391,7 +537,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
               OpamConsole.warning
                 "%s had no recorded checksum: adding %s"
                 source_string (OpamHash.to_string hash);
-              link dst;
+              link ?extra urlf dst;
               OpamFile.URL.with_checksum [hash] urlf)
       | (hash::_) as cksums ->
         let dst = OpamRepository.cache_file target_cache hash in
@@ -403,15 +549,28 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
               OpamConsole.error_and_exit "%s could not be obtained: %s"
                 source_string msg
             | Result () | Up_to_date () ->
-              link dst;
+              link ?extra urlf dst;
               urlf)
     in
     let opam = OpamSwitchState.opam st nv in
     let opam0 = opam in
-    (match OpamFile.OPAM.url opam with
-     | None -> Done opam
-     | Some urlf ->
-       dl_job urlf @@| fun urlf -> OpamFile.OPAM.with_url urlf opam)
+    (match OpamPackage.Map.find_opt nv virtual_pins with
+     | Some archive ->
+       let hash = OpamHash.compute (OpamFilename.to_string archive) in
+       let dst = OpamRepository.cache_file target_cache hash in
+       OpamFilename.copy ~src:archive ~dst;
+       let urlf =
+         OpamFile.URL.create ~checksum:[hash]
+           (OpamUrl.of_string
+              ("archives/"^OpamFilename.(Base.to_string (basename archive))))
+       in
+       link urlf dst;
+       Done (OpamFile.OPAM.with_url urlf opam)
+     | None ->
+       match OpamFile.OPAM.url opam with
+       | None -> Done opam
+       | Some urlf ->
+         dl_job urlf @@| fun urlf -> OpamFile.OPAM.with_url urlf opam)
     @@+ fun opam ->
     OpamProcess.Job.seq_map
       (fun (name, urlf) ->
@@ -537,6 +696,31 @@ let pkg_version_conv =
     (fun ppf v -> Format.pp_print_string ppf (OpamPackage.Version.to_string v))
   )
 
+let atom_with_target_conv =
+  Arg.conv ~docv:"PACKAGE" (
+    (fun s ->
+       let atom, target = match OpamStd.String.cut_at s '@' with
+         | None -> s, None
+         | Some (atom, target) -> atom, Some target
+       in
+       match Arg.conv_parser OpamArg.atom atom with
+       | Error _ as e -> e
+       | Ok ((_, cstr) as atom) ->
+         match target with
+         | None -> Ok (atom, None)
+         | Some target ->
+           match cstr with
+           | None | Some (`Eq, _) ->
+             (try Ok (atom, Some (OpamUrl.parse target))
+              with Failure s -> Error (`Msg s))
+           | _ -> Error (`Msg "Only equality version constraints can be \
+                               specified together with a target URL")),
+    (fun ppf (atom, target) ->
+       Format.fprintf ppf "%a%s"
+         (Arg.conv_printer OpamArg.atom) atom
+         (OpamStd.Option.to_string (fun u -> "@" ^ OpamUrl.to_string u) target))
+  )
+
 let ocamlv_arg =
   Arg.(value & opt (some pkg_version_conv) None & info ["ocaml"] ~doc:
          "Select a version of OCaml to include. It will be used for \
@@ -598,10 +782,16 @@ let self_extract_arg =
          "Generate a self-extracting script besides the .tar.gz bundle")
 
 let packages_arg =
-  Arg.(non_empty & pos_all OpamArg.atom [] & info [] ~docv:"PACKAGES" ~doc:
+  Arg.(non_empty & pos_all atom_with_target_conv [] &
+       info [] ~docv:"PACKAGE" ~doc:
          "List of packages to include in the bundle. Their dependencies will \
-          be included in the bundle, but only these packages will have \
-          wrappers installed.")
+          be included as well, but only listed packages will have wrappers \
+          installed. Packages can be specified as $(i,NAME[CONSTRAINT][@URL]), \
+          where $(i,CONSTRAINT) is an optional version constraint starting \
+          with one of $(i,.) or $(i,=), $(i,!=), $(i,>), $(i,>=), $(i,<) or \
+          $(i,<=), and $(i,@URL) can be specified to use the package source \
+          from the given URL (in which case, the constraint, if any, must be \
+          $(i,.) or $(i,=)).")
 
 let man = [
   `S "DESCRIPTION";
