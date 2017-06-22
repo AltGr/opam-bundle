@@ -53,7 +53,7 @@ opam show --list-files %{install_packages}% | grep "^$bin_prefix" | $SUDO sh -ue
     else
         cat <<EOF >\"\$WRAPPER\"
 #!/bin/sh -e
-export PATH=\"$PREFIX/bin:\$PATH\"
+export PATH=\"$PREFIX/bin:\\\$PATH\"
 exec \"$PREFIX/bin/opam\" exec --root \"$OPAMROOT\" --readonly -- \"\$bin\" \"\\\$@\"
 EOF
         chmod a+x \"\$WRAPPER\"

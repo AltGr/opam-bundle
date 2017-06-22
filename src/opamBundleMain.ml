@@ -560,7 +560,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
        OpamFilename.copy ~src:archive ~dst;
        let urlf =
          OpamFile.URL.create ~checksum:[hash]
-           (OpamUrl.of_string
+           (OpamUrl.parse ~backend:`http
               ("archives/"^OpamFilename.(Base.to_string (basename archive))))
        in
        link urlf dst;

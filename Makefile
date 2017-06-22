@@ -1,7 +1,7 @@
 all: opam-bundle opam-bundle.1 opam-bundle.install
 
 opam-bundle: src/opamBundleScripts.ml src/opamBundleMain.ml
-	ocamlfind ocamlopt -package cmdliner,opam-repository,opam-client -linkpkg -w A-44 -I src $^ -o $@
+	ocamlfind ocamlopt -package cmdliner,opam-repository,opam-client -linkpkg -w A-4-44 -I src $^ -o $@
 
 opam-bundle.1: opam-bundle
 	./$< --help=groff >$@
