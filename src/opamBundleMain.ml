@@ -64,7 +64,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
           List.hd (OpamSystem.read_command_output ["ocamlc"; "-vnum"])
         with e -> OpamStd.Exn.fatal e; OpamPackage.Version.of_string "4.04.1"
       in
-      OpamConsole.msg "No OCaml version selected, will use %s.\n"
+      OpamConsole.formatted_msg "No OCaml version selected, will use %s.\n"
         (OpamConsole.colorise `bold @@ OpamPackage.Version.to_string v);
       v
   in
@@ -108,8 +108,9 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
         OpamVariable.of_string "os",
         (lazy (Some (S (OpamStd.Sys.os_string ()))), comment);
       ] in
-      OpamConsole.msg "No environment specified, will use the following for \
-                       package resolution (based on the host system):\n%s"
+      OpamConsole.formatted_msg
+        "No environment specified, will use the following for package \
+         resolution (based on the host system):\n%s"
         (OpamStd.Format.itemize (fun (v, (lazy c, _)) ->
              Printf.sprintf "%s = %S"
                (OpamConsole.colorise `bold @@ OpamVariable.to_string v)
@@ -139,6 +140,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   let opam_root = OpamFilename.Op.(tmp / "root") in
   OpamStateConfig.update ~root_dir:opam_root ();
   let repos_dir = OpamFilename.Op.(tmp / "repos") in
+  (* *** *)
   OpamConsole.header_msg "Initialising repositories";
   let repos_list_rev, repos_map =
     List.fold_left (fun (repos_list_rev, repos_map) url ->
@@ -205,6 +207,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   if failed <> [] then
     OpamConsole.error_and_exit "Could not fetch these repositories: %s"
       (OpamStd.List.to_string OpamRepositoryName.to_string failed);
+  (* *** *)
   OpamConsole.header_msg "Resolving package set";
   let st =
     OpamSwitchState.load_virtual ~repos_list gt rt
@@ -251,14 +254,19 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     }
   in
   let include_packages =
-    OpamListCommand.filter ~base:st.packages st packages_filter
+    try OpamListCommand.filter ~base:st.packages st packages_filter
+    with Failure msg ->
+      OpamConsole.error "Sorry, no consistent installation could be found \
+                         including the requested packages.";
+      OpamConsole.errmsg "%s" msg;
+      OpamStd.Sys.exit 66;
   in
   let install_packages =
     OpamFormula.packages_of_atoms include_packages packages
   in
   if OpamPackage.Set.is_empty include_packages then
     OpamConsole.error_and_exit "No packages match the selection criteria";
-  OpamConsole.msg "The following packages will be included:\n%s"
+  OpamConsole.formatted_msg "The following packages will be included:\n%s"
     (OpamStd.Format.itemize (fun nv ->
          let color =
            if OpamPackage.Set.mem nv install_packages then [`bold; `underline]
@@ -269,6 +277,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
         (OpamPackage.Set.elements include_packages));
   if not @@ OpamConsole.confirm "Continue ?" then
     OpamStd.Sys.exit 12;
+  (* *** *)
   OpamConsole.header_msg "Getting all archives";
   let bundle_dir = OpamFilename.Op.(tmp / bundle_name) in
   let target_repo = OpamFilename.Op.(bundle_dir / "repo") in
@@ -389,6 +398,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   OpamParallel.iter ~jobs:OpamStateConfig.(!r.dl_jobs)
     ~command:pull_to_cache
     randomised_pkglist;
+  (* *** *)
   OpamConsole.header_msg "Getting bootstrap packages";
   let opam_url = opam_archive_url opamv in
   let opam_archive =
@@ -404,6 +414,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
           "Opam archive at %s could not be obtained: %s"
           (OpamUrl.to_string opam_url) msg
       | Result () | Up_to_date () -> ());
+  (* *** *)
   OpamConsole.header_msg "Building bundle";
   let include_scripts =
     ["common.sh"; "bootstrap.sh"; "configure.sh"; "compile.sh"]
@@ -435,7 +446,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
        "tar" ["czf"; OpamFilename.to_string output; bundle_name]
      @@> fun result ->
      OpamSystem.raise_on_process_error result;
-     OpamConsole.msg "Done. Bundle generated as %s\n"
+     OpamConsole.formatted_msg "Done. Bundle generated as %s\n"
        (OpamFilename.to_string output);
      Done ());
   if self_extract then
@@ -473,7 +484,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     close_in ic;
     close_out oc;
     OpamFilename.chmod file 0o755;
-    OpamConsole.msg "Self-extracting archive generated as %s\n"
+    OpamConsole.formatted_msg "Self-extracting archive generated as %s\n"
       (OpamFilename.to_string file)
 
 
