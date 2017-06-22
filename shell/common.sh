@@ -1,7 +1,7 @@
 DIR=$( cd $(dirname "$0") && pwd )
 PREFIX="$DIR/bootstrap"
 OPAMROOT="$DIR/opam"
-LOG="$DIR/$(basename "$0").log"
+LOG="$DIR/$(basename "$0" .sh).log"
 
 title() {
   printf "\n\033[33m================\033[m %-45s \033[33m================\033[m\n\n" "$*"

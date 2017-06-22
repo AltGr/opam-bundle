@@ -456,9 +456,8 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       (OpamConsole.colorise `bold "any")
   else
     OpamConsole.formatted_msg
-      "The bundle will be installable on systems matching the following \
-       formula:\n    %s\n"
-      (OpamFilter.to_string avail_constraint);
+      "The bundle will be installable on systems matching the following: %s\n"
+      (OpamConsole.colorise `bold (OpamFilter.to_string avail_constraint));
   if not @@ OpamConsole.confirm "Continue ?" then
     OpamStd.Sys.exit 12;
   (* *** *)
