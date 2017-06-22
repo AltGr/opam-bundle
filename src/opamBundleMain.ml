@@ -275,6 +275,38 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
          OpamConsole.colorise' color (OpamPackage.name_to_string nv) ^"."^
          OpamPackage.version_to_string nv)
         (OpamPackage.Set.elements include_packages));
+  let avail_constraint =
+    let rec filter_to_list = function
+      | FBool true -> []
+      | FAnd (f1, f2) -> filter_to_list f1 @ filter_to_list f2
+      | f -> [f]
+    in
+    OpamPackage.Set.fold (fun nv acc ->
+        FAnd (acc, OpamFile.OPAM.available (OpamSwitchState.opam st nv)))
+      include_packages (FBool true) |>
+    OpamFilter.partial_eval (fun v ->
+        match OpamVariable.Full.to_string v with
+        | "opam-version" -> Some (S (OpamPackage.Version.to_string opamv))
+        | "sys-ocaml-version" -> Some (S (OpamPackage.Version.to_string ocamlv))
+        | _ -> None) |>
+    filter_to_list |>
+    List.fold_left (fun acc f ->
+        if List.mem f acc then acc else f::acc)
+      [] |>
+    List.fold_left (fun acc f ->
+        if acc = FBool true then f else FAnd (f,acc))
+      (FBool true)
+  in
+  if avail_constraint = FBool true then
+    OpamConsole.formatted_msg
+      "According to the packages' metadata, the bundle should be installable \
+       on %s arch/OS.\n"
+      (OpamConsole.colorise `bold "any")
+  else
+    OpamConsole.formatted_msg
+      "The bundle will be installable on systems matching the following \
+       formula:\n    %s\n"
+      (OpamFilter.to_string avail_constraint);
   if not @@ OpamConsole.confirm "Continue ?" then
     OpamStd.Sys.exit 12;
   (* *** *)
@@ -530,6 +562,7 @@ let output_arg =
          "Output the bundle to the given file.")
 
 let env_arg =
+  (* TODO: make repeatable to ensure multiple environments will work! *)
   Arg.(value & opt (some (list string)) ~vopt:(Some []) None &
        info ["environment"] ~doc:
          "Use the given opam environment, in the form of a list of \
