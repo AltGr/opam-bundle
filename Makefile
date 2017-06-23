@@ -15,7 +15,7 @@ src/opamBundleScripts.ml: shell/common.sh shell/bootstrap.sh shell/configure.sh 
 
 .PHONY:clean distclean install
 clean:
-	rm -f opamBundleScripts.ml src/*.cm* src/*.o src/*.*a src/*.lib
+	rm -f src/opamBundleScripts.ml src/*.cm* src/*.o src/*.*a src/*.lib
 
 distclean: clean
 	rm -f *.install opam-bundle opam-bundle.1
