@@ -19,8 +19,18 @@ let bootstrap_packages ocamlv = [
   Some (`Geq, OpamPackage.Version.of_string "1.0.4");
 ]
 
+let system_ocaml_package_name = OpamPackage.Name.of_string "ocaml-system"
+
+let wrapper_ocaml_package_name = OpamPackage.Name.of_string "ocaml"
+
+(* This package will be created solely for the bundle, and replaces
+   ocaml-system *)
+let bootstrap_ocaml_package_name = OpamPackage.Name.of_string "ocaml-bootstrap"
+let bootstrap_ocaml_package ocamlv =
+  OpamPackage.create bootstrap_ocaml_package_name ocamlv
+
 let additional_user_packages ocamlv = [
-  OpamPackage.Name.of_string "ocaml-system", Some (`Eq, ocamlv);
+  OpamSolution.eq_atom_of_package (bootstrap_ocaml_package ocamlv);
 ]
 
 let hardcoded_env ocamlv = [
@@ -31,10 +41,11 @@ let hardcoded_env ocamlv = [
 
 (* Used to optimise solving times: we know we'll never need those (since we
    require a definite version, and hardcode the use of ocaml-base-compiler for
-   bootstrap (and ocaml-system for reuse) *)
+   bootstrap (and ocaml-bootstrap for reuse) *)
 let exclude_packages ocamlv = [
   OpamPackage.Name.of_string "ocaml", Some (`Neq, ocamlv);
   OpamPackage.Name.of_string "ocaml-variants", None;
+  OpamPackage.Name.of_string "ocaml-system", None;
 ]
 
 let opam_archive_url opamv =
@@ -207,14 +218,47 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   in
   if not success then
     OpamConsole.error_and_exit "Could not fetch the repositories";
-  (* *** *)
-  let rt, repos_list, virtual_pins =
+  (* *** Custom packages *)
+  let custom_opams =
+    (* Renaming ocaml-system to ocaml-bootstrap avoids confusion from other
+       packages *)
+    let find_def nv =
+      match OpamRepositoryState.find_package_opt rt repos_list nv with
+      | None ->
+        OpamConsole.error_and_exit "Package %s not found in the repositories"
+          (OpamPackage.to_string nv)
+      | Some (_, opam) -> opam
+    in
+    let bootstrap_ocaml_opam =
+      find_def (OpamPackage.create system_ocaml_package_name ocamlv) |>
+      OpamFile.OPAM.with_name bootstrap_ocaml_package_name |>
+      OpamFile.OPAM.with_synopsis
+        "OCaml compiler generated during the opam-bundle bootstrap phase"
+    in
+    let wrapper_package =
+      OpamPackage.create wrapper_ocaml_package_name ocamlv
+    in
+    let wrapper_ocaml_opam =
+      let opam = find_def wrapper_package in
+      OpamFile.OPAM.with_depends
+        (OpamFormula.map (fun (name, c as at) ->
+             if name = system_ocaml_package_name then
+               Atom (bootstrap_ocaml_package_name, c)
+             else Atom at)
+            (OpamFile.OPAM.depends opam))
+        opam
+    in
+    OpamPackage.Map.of_list [
+      bootstrap_ocaml_package ocamlv, bootstrap_ocaml_opam;
+      wrapper_package, wrapper_ocaml_opam;
+    ]
+  in
+  let external_opams, virtual_pins =
     if List.for_all (fun (_,target) -> target = None) packages_targets then
-      rt, repos_list, OpamPackage.Map.empty
+      OpamPackage.Map.empty, OpamPackage.Map.empty
     else
     let srcs = OpamFilename.Op.(tmp / "sources") in
     OpamConsole.header_msg "Getting external packages";
-    let repo_name = gen_repo_name rt.repositories "custom" in
     let pkgs_urls =
       OpamStd.List.filter_map (function
           | _, None -> None
@@ -337,12 +381,22 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
         OpamPackage.Map.empty
         pkgs_opams_archives
     in
+    let virtual_pins =
+      List.fold_left (fun acc (nv,_,archive) ->
+          OpamPackage.Map.add nv archive acc)
+        OpamPackage.Map.empty pkgs_opams_archives
+    in
+    opams, virtual_pins
+  in
+  let custom_repo = gen_repo_name rt.repositories "custom" in
+  let repos_list = custom_repo :: repos_list in
+  let rt =
     { rt with
-      repo_opams = OpamRepositoryName.Map.add repo_name opams rt.repo_opams; },
-    repo_name :: repos_list,
-    List.fold_left (fun acc (nv,_,archive) ->
-        OpamPackage.Map.add nv archive acc)
-      OpamPackage.Map.empty pkgs_opams_archives
+      repo_opams =
+        OpamRepositoryName.Map.add custom_repo
+          (OpamPackage.Map.union (fun o _ -> o) custom_opams external_opams)
+          rt.repo_opams;
+    }
   in
   let packages =
     (* Enforce the pinned-to versions in the request *)

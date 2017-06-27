@@ -16,7 +16,8 @@ else
    if [ ! -f "$OPAMROOT/config" ]; then
       logged_cmd "Initialising" opam init --bare --no-setup $DIR/repo
    fi
-   logged_cmd "Creating sandbox" opam switch create default ocaml-system
+   logged_cmd "Creating sandbox" opam switch create default ocaml-bootstrap
+   ln -sf "$PREFIX/lib/ocaml" "$(opam config var lib)/ocaml"
 fi
 
 title "Configure: bootstrapping auxiliary utilities"

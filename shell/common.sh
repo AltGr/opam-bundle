@@ -3,6 +3,8 @@ PREFIX="$DIR/bootstrap"
 OPAMROOT="$DIR/opam"
 LOG="$DIR/$(basename "$0" .sh).log"
 
+rm -f "$LOG"
+
 title() {
   printf "\n\033[33m================\033[m %-45s \033[33m================\033[m\n\n" "$*"
 }
