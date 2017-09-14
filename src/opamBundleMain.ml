@@ -189,7 +189,8 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   let dl_cache =
     let std_opamroot = OpamStateConfig.opamroot () in
     [OpamUrl.parse ~backend:`rsync
-       (OpamFilename.Dir.to_string (OpamPath.download_cache std_opamroot))]
+       (OpamFilename.Dir.to_string
+          (OpamRepositoryPath.download_cache std_opamroot))]
   in
   let gt = {
     global_lock = OpamSystem.lock_none;
@@ -212,12 +213,14 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
         repos_map;
     repo_opams = OpamRepositoryName.Map.empty;
   } in
-  let success, rt =
+  let failed_repos, rt =
     OpamRepositoryCommand.update_with_auto_upgrade rt
       (OpamRepositoryName.Map.keys repos_map)
   in
-  if not success then
-    OpamConsole.error_and_exit "Could not fetch the repositories";
+  if failed_repos <> [] then
+    OpamConsole.error_and_exit `Sync_error
+      "Could not fetch some repositories: %s"
+      (OpamStd.List.to_string OpamRepositoryName.to_string failed_repos);
   (* *** Custom packages *)
   let custom_opams =
     (* Renaming ocaml-system to ocaml-bootstrap avoids confusion from other
@@ -225,7 +228,8 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     let find_def nv =
       match OpamRepositoryState.find_package_opt rt repos_list nv with
       | None ->
-        OpamConsole.error_and_exit "Package %s not found in the repositories"
+        OpamConsole.error_and_exit `Not_found
+          "Package %s not found in the repositories"
           (OpamPackage.to_string nv)
       | Some (_, opam) -> opam
     in
@@ -277,7 +281,8 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
             OpamRepository.pull_tree (OpamPackage.Name.to_string name)
               srcdir [] [url] @@| function
             | Not_available s ->
-              OpamConsole.error_and_exit "Could not obtain %s from %s: %s"
+              OpamConsole.error_and_exit `Sync_error
+                "Could not obtain %s from %s: %s"
                 (OpamPackage.Name.to_string name)
                 (OpamUrl.to_string url)
                 s
@@ -336,7 +341,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
                    (OpamRepositoryName.Map.find repo rt.repositories).repo_url);
                nv, o
              | None ->
-               OpamConsole.error_and_exit
+               OpamConsole.error_and_exit `Not_found
                  "Specified sources for %s don't contain a package definition, \
                   and none was found in the repositories"
                  (OpamPackage.to_string nv)
@@ -358,7 +363,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
                 nv, o
               | None -> assert false
             with Not_found ->
-              OpamConsole.error_and_exit
+              OpamConsole.error_and_exit `Not_found
                 "Specified sources for %s don't contain a package definition, \
                  and none was found in the repositories"
                 (OpamPackage.Name.to_string name)
@@ -434,7 +439,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       required_atoms
   in
   if unavailable <> [] then
-    OpamConsole.error_and_exit
+    OpamConsole.error_and_exit `Not_found
       "The following packages do not exist in the specified repositories, or \
        are not available with the given configuration:\n%s"
       (OpamStd.Format.itemize
@@ -464,13 +469,14 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       OpamConsole.error "Sorry, no consistent installation could be found \
                          including the requested packages.";
       OpamConsole.errmsg "%s" msg;
-      OpamStd.Sys.exit 66;
+      OpamStd.Sys.exit_because `No_solution;
   in
   let install_packages =
     OpamFormula.packages_of_atoms include_packages packages
   in
   if OpamPackage.Set.is_empty include_packages then
-    OpamConsole.error_and_exit "No packages match the selection criteria";
+    OpamConsole.error_and_exit `No_solution
+      "No packages match the selection criteria";
   OpamConsole.formatted_msg "The following packages will be included:\n%s"
     (OpamStd.Format.itemize (fun nv ->
          let color =
@@ -512,7 +518,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       "The bundle will be installable on systems matching the following: %s\n"
       (OpamConsole.colorise `bold (OpamFilter.to_string avail_constraint));
   if not @@ OpamConsole.confirm "Continue ?" then
-    OpamStd.Sys.exit 12;
+    OpamStd.Sys.exit_because `Aborted;
   (* *** *)
   OpamConsole.header_msg "Getting all archives";
   let bundle_dir = OpamFilename.Op.(tmp / bundle_name) in
@@ -580,7 +586,8 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
           (OpamFile.URL.url urlf :: OpamFile.URL.mirrors urlf)
         @@| (function
             | Not_available msg ->
-              OpamConsole.error_and_exit "%s could not be obtained: %s"
+              OpamConsole.error_and_exit `Sync_error
+                "%s could not be obtained: %s"
                 source_string msg
             | Result () | Up_to_date () ->
               let hash = OpamHash.compute (OpamFilename.to_string f) in
@@ -598,7 +605,8 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
           (OpamFile.URL.url urlf :: OpamFile.URL.mirrors urlf)
         @@| (function
             | Not_available msg ->
-              OpamConsole.error_and_exit "%s could not be obtained: %s"
+              OpamConsole.error_and_exit `Sync_error
+                "%s could not be obtained: %s"
                 source_string msg
             | Result () | Up_to_date () ->
               link ?extra urlf dst;
@@ -659,7 +667,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     [opam_url]
   @@| (function
       | Not_available msg ->
-        OpamConsole.error_and_exit
+        OpamConsole.error_and_exit `Sync_error
           "Opam archive at %s could not be obtained: %s"
           (OpamUrl.to_string opam_url) msg
       | Result () | Up_to_date () -> ());
