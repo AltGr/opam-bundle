@@ -15,8 +15,8 @@ open OpamProcess.Job.Op
 
 let bootstrap_packages ocamlv = [
   OpamPackage.Name.of_string "ocaml-base-compiler", Some (`Eq, ocamlv);
-  OpamPackage.Name.of_string "depext",
-  Some (`Geq, OpamPackage.Version.of_string "1.0.4");
+  OpamPackage.Name.of_string "opam-depext",
+  Some (`Geq, OpamPackage.Version.of_string "1.1.0");
 ]
 
 let system_ocaml_package_name = OpamPackage.Name.of_string "ocaml-system"
@@ -33,10 +33,13 @@ let additional_user_packages ocamlv = [
   OpamSolution.eq_atom_of_package (bootstrap_ocaml_package ocamlv);
 ]
 
-let hardcoded_env ocamlv = [
+let hardcoded_env ocamlv opamv = [
   OpamVariable.of_string "sys-ocaml-version",
   (lazy (Some (S (OpamPackage.Version.to_string ocamlv))),
    "Pre-selected OCaml version");
+  OpamVariable.of_string "opam-version",
+  (lazy (Some (S (OpamPackage.Version.to_string opamv))),
+   "Pre-selected opam version");
 ]
 
 (* Used to optimise solving times: we know we'll never need those (since we
@@ -82,7 +85,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   in
   let opamv = match opamv with
     | Some v -> v
-    | None -> OpamPackage.Version.of_string "2.0.0~beta3"
+    | None -> OpamPackage.Version.of_string "2.0.0~beta5"
   in
   let output = match output, packages with
     | Some f, _ ->
@@ -113,13 +116,10 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
         e
       |> OpamVariable.Map.of_list
     | None ->
-      let comment = "Inferred from current system" in
-      let e = [
-        OpamVariable.of_string "arch",
-        (lazy (Some (S (OpamStd.Sys.arch ()))), comment);
-        OpamVariable.of_string "os",
-        (lazy (Some (S (OpamStd.Sys.os_string ()))), comment);
-      ] in
+      let e =
+        List.map (fun (v,x) -> v, (x, "Inferred from current system"))
+            OpamSysPoll.variables
+      in
       OpamConsole.formatted_msg
         "No environment specified, will use the following for package \
          resolution (based on the host system):\n%s"
@@ -134,7 +134,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   let env =
     OpamVariable.Map.union (fun a _ -> a)
       env
-      (OpamVariable.Map.of_list (hardcoded_env ocamlv))
+      (OpamVariable.Map.of_list (hardcoded_env ocamlv opamv))
   in
   let packages_filter =
     let module L = OpamListCommand in
@@ -817,11 +817,12 @@ let env_arg =
        info ["environment"] ~doc:
          "Use the given opam environment, in the form of a list of \
           comma-separated 'var=value' bindings, when resolving variables. This \
-          is used when computing the set of available packages: if undefined, \
-          a set of predefined variables based on the current system is used. \
-          If set without argument, an empty environment is used: this can be \
-          used to ensure the generated bundle won't have arch or OS \
-          constraints.")
+          is used when computing the set of available packages, where opam \
+          uses variables $(i,arch), $(i,os), $(i,os-distribution), \
+          $(i,os-version) and $(i,os-family): if undefined, the variables are \
+          inferred from the current system. If set without argument, an empty \
+          environment is used: this can be used to ensure the generated bundle \
+          won't have arch or OS constraints.")
 
 let with_test_arg =
   Arg.(value & flag & info ["t";"with-test"] ~doc:
@@ -881,9 +882,9 @@ let man = [
       ./foo-bundle/compile.sh ~/local) to get a usable $(i,bar) binary within \
       $(b,~/local/bin) (if the user does not have write permission to the \
       given prefix, the script will use $(b,sudo)).";
-  `P "Note that the bundle itself should not be moved for the wrappers to keep \
-      working. Besides the wrappers, nothing is written outside of the \
-      directory where the bundle was untarred.";
+  `P "Note that the extracted bundle itself should not be moved for the \
+      wrappers to keep working. Besides the wrappers, nothing is written \
+      outside of the directory where the bundle was untarred.";
 ]
 
 let create_bundle_command =

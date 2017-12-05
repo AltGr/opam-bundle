@@ -23,7 +23,7 @@ fi
 title "Configure: bootstrapping auxiliary utilities"
 
 echo "Output is in $LOG"
-logged_cmd "Compiling bootstrap utilities" opam install depext --yes
+logged_cmd "Compiling bootstrap utilities" opam install opam-depext --yes
 
 title "Configure: getting system dependencies"
 
