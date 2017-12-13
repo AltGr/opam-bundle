@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "opam-bundle"
-version: "0.2"
+version: "0.3"
 maintainer: "Louis Gesbert <louis.gesbert@ocamlpro.com>"
 authors: "Louis Gesbert <louis.gesbert@ocamlpro.com>"
 license: "GPL-3"

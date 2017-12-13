@@ -1,3 +1,7 @@
+### 0.3
+- ported to opam 2.0.0~beta5 (in particular, for the new `depexts:`)
+- use the arch, os, etc. variables inferred by opam
+
 ### 0.2
 - pass `--with-doc`, `--with-test` along in the generated bootstrap/install
   scripts
