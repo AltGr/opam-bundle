@@ -85,7 +85,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   in
   let opamv = match opamv with
     | Some v -> v
-    | None -> OpamPackage.Version.of_string "2.0.0~beta5"
+    | None -> OpamPackage.Version.of_string "2.0.0~rc2"
   in
   let output = match output, packages with
     | Some f, _ ->
@@ -517,6 +517,10 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     OpamConsole.formatted_msg
       "The bundle will be installable on systems matching the following: %s\n"
       (OpamConsole.colorise `bold (OpamFilter.to_string avail_constraint));
+  OpamConsole.note
+    "Opam system sandboxing (introduced in 2.0) will be disabled in the \
+     bundle. You need to trust that the build scripts of the included packages \
+     don't write outside of their build directory and dest dir.";
   if not @@ OpamConsole.confirm "Continue ?" then
     OpamStd.Sys.exit_because `Aborted;
   (* *** *)
@@ -790,7 +794,7 @@ let opamv_arg =
   Arg.(value & opt (some pkg_version_conv) None & info ["opam"] ~doc:
          "Select a version of opam to include. That version must be released \
           with an upstream \"full-archive\" available online, and be at least \
-          2.0.0~beta3, to support all the required features.")
+          2.0.0~rc2, to support all the required features.")
 
 let repo_arg =
   Arg.(value & opt_all OpamArg.url [OpamInitDefaults.repository_url] &

@@ -31,7 +31,7 @@ if [ -z "$DESTDIR" ]; then
     echo
     echo '  - or run the following to update the environment in the current shell, so that'
     echo '    they are in your PATH:'
-    echo "      export PATH=\"$PREFIX/bin:\$PATH\"; eval \$(opam env --root \"$OPAMROOT\")"
+    echo "      export PATH=\"$PREFIX/bin:\$PATH\"; eval \$(opam env --root \"$OPAMROOT\" --set-root)"
     echo
     finished
     exit 0

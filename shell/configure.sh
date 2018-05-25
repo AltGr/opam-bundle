@@ -14,7 +14,7 @@ else
    echo "Output is in $LOG"
 
    if [ ! -f "$OPAMROOT/config" ]; then
-      logged_cmd "Initialising" opam init --bare --no-setup $DIR/repo
+      logged_cmd "Initialising" opam init --bare --no-setup --yes --disable-sandboxing $DIR/repo
    fi
    logged_cmd "Creating sandbox" opam switch create default ocaml-bootstrap
    ln -sf "$PREFIX/lib/ocaml" "$(opam config var lib)/ocaml"
