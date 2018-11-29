@@ -23,6 +23,8 @@ let system_ocaml_package_name = OpamPackage.Name.of_string "ocaml-system"
 
 let wrapper_ocaml_package_name = OpamPackage.Name.of_string "ocaml"
 
+let ocaml_config_package = OpamPackage.of_string "ocaml-config.1"
+
 (* This package will be created solely for the bundle, and replaces
    ocaml-system *)
 let bootstrap_ocaml_package_name = OpamPackage.Name.of_string "ocaml-bootstrap"
@@ -239,6 +241,10 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       OpamFile.OPAM.with_synopsis
         "OCaml compiler generated during the opam-bundle bootstrap phase"
     in
+    let ocaml_config_opam =
+      find_def ocaml_config_package |>
+      OpamFile.OPAM.with_depends Empty
+    in
     let wrapper_package =
       OpamPackage.create wrapper_ocaml_package_name ocamlv
     in
@@ -254,6 +260,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     in
     OpamPackage.Map.of_list [
       bootstrap_ocaml_package ocamlv, bootstrap_ocaml_opam;
+      ocaml_config_package, ocaml_config_opam;
       wrapper_package, wrapper_ocaml_opam;
     ]
   in
@@ -802,10 +809,10 @@ let repo_arg =
          "URLs of the repositories to use (highest priority first). Note that \
           it is required that the OCaml package at the selected version is \
           included (see $(b,--ocaml)), with the hierarchy and alternatives as \
-          on the default repository ('ocaml-base-compiler' and 'ocaml-system' \
-          packages, with the 'ocaml' wrapper virtual package). This makes it \
-          possible to bootstrap opam and compile the requested packages with a \
-          single compilation of OCaml.")
+          on the default repository ('ocaml-base-compiler', 'ocaml-system' and \
+          'ocaml-config' packages, with the 'ocaml' wrapper virtual package). \
+          This makes it possible to bootstrap opam and compile the requested \
+          packages with a single compilation of OCaml.")
 
 let debug_arg =
   Arg.(value & flag & info ["debug"] ~doc:
