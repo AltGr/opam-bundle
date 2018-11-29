@@ -6,6 +6,9 @@ start
 
 title "Bootstrap: checking for prerequisites"
 
+# Avoid interference from an existing opam installation
+eval $(opam config revert-env) >/dev/null 2>&1 || true
+
 MISSING=
 check_prereq() {
     NAME="$1"
