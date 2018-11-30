@@ -241,15 +241,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       OpamFile.OPAM.with_synopsis
         "OCaml compiler generated during the opam-bundle bootstrap phase"
     in
-    let ocaml_config_opam =
-      find_def ocaml_config_package |>
-      OpamFile.OPAM.with_depends Empty
-    in
-    let wrapper_package =
-      OpamPackage.create wrapper_ocaml_package_name ocamlv
-    in
-    let wrapper_ocaml_opam =
-      let opam = find_def wrapper_package in
+    let fix_compiler_depends opam =
       OpamFile.OPAM.with_depends
         (OpamFormula.map (fun (name, c as at) ->
              if name = system_ocaml_package_name then
@@ -257,6 +249,15 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
              else Atom at)
             (OpamFile.OPAM.depends opam))
         opam
+    in
+    let ocaml_config_opam =
+      find_def ocaml_config_package |> fix_compiler_depends
+    in
+    let wrapper_package =
+      OpamPackage.create wrapper_ocaml_package_name ocamlv
+    in
+    let wrapper_ocaml_opam =
+      find_def wrapper_package |> fix_compiler_depends
     in
     OpamPackage.Map.of_list [
       bootstrap_ocaml_package ocamlv, bootstrap_ocaml_opam;
@@ -287,12 +288,12 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
             in
             OpamRepository.pull_tree (OpamPackage.Name.to_string name)
               srcdir [] [url] @@| function
-            | Not_available s ->
+            | Not_available (s, _) ->
               OpamConsole.error_and_exit `Sync_error
-                "Could not obtain %s from %s: %s"
+                "Could not obtain %s from %s%s"
                 (OpamPackage.Name.to_string name)
                 (OpamUrl.to_string url)
-                s
+                (OpamStd.Option.to_string (fun s -> ": "^s) s)
             | Up_to_date _ | Result _ -> (name, v), srcdir)
         pkgs_urls
     in
@@ -596,10 +597,10 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
         OpamRepository.pull_file name f []
           (OpamFile.URL.url urlf :: OpamFile.URL.mirrors urlf)
         @@| (function
-            | Not_available msg ->
+            | Not_available (msg, _) ->
               OpamConsole.error_and_exit `Sync_error
-                "%s could not be obtained: %s"
-                source_string msg
+                "%s could not be obtained%s"
+                source_string (OpamStd.Option.to_string (fun s -> ": "^s) msg)
             | Result () | Up_to_date () ->
               let hash = OpamHash.compute (OpamFilename.to_string f) in
               let dst = OpamRepository.cache_file target_cache hash in
@@ -615,10 +616,10 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
           ~cache_dir:target_cache ~cache_urls:dl_cache cksums
           (OpamFile.URL.url urlf :: OpamFile.URL.mirrors urlf)
         @@| (function
-            | Not_available msg ->
+            | Not_available (msg, _) ->
               OpamConsole.error_and_exit `Sync_error
-                "%s could not be obtained: %s"
-                source_string msg
+                "%s could not be obtained%s"
+                source_string (OpamStd.Option.to_string (fun s -> ": "^s) msg)
             | Result () | Up_to_date () ->
               link ?extra urlf dst;
               urlf)
@@ -677,10 +678,11 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     [(*todo:checksums*)]
     [opam_url]
   @@| (function
-      | Not_available msg ->
+      | Not_available (msg, _) ->
         OpamConsole.error_and_exit `Sync_error
-          "Opam archive at %s could not be obtained: %s"
-          (OpamUrl.to_string opam_url) msg
+          "Opam archive at %s could not be obtained%s"
+          (OpamUrl.to_string opam_url)
+          (OpamStd.Option.to_string (fun s -> ": "^s) msg)
       | Result () | Up_to_date () -> ());
   (* *** *)
   OpamConsole.header_msg "Building bundle";
