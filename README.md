@@ -1,5 +1,4 @@
-<!-- language: lang-none -->
-
+```
 opam-bundle(1)                Opam-bundle Manual                opam-bundle(1)
 
 NAME
@@ -110,3 +109,4 @@ OPTIONS
            Confirm all prompts without asking.
 
 Opam-bundle                                                     opam-bundle(1)
+```
