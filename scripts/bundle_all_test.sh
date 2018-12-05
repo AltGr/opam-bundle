@@ -2,7 +2,7 @@
 
 #set -x
 
-PKGS=`opam search | awk '!/^#/{print $1}'`
+PKGS=`opam list --short`
 
 if which par > /dev/null; then
     # par: https://github.com/UnixJunkie/PAR
