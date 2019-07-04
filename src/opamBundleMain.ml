@@ -91,7 +91,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   in
   let output = match output, packages with
     | Some f, _ ->
-      if String.contains (OpamFilename.(Base.to_string (basename f))) '.'
+      if not (String.contains (OpamFilename.(Base.to_string (basename f))) '.')
       then OpamFilename.add_extension f output_extension
       else f
     | None, (name, _)::_ ->
