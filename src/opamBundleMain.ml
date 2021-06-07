@@ -69,7 +69,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     packages_targets =
   OpamClientConfig.opam_init
     ~debug_level:(if debug then 1 else 0)
-    ~answer:(if yes then Some true else None)
+    ~yes:(if yes then Some true else None)
     ();
   let packages = List.map fst packages_targets in
   let ocamlv = match ocamlv with
@@ -176,8 +176,6 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
           | [] -> gen_repo_name repos_map "repository"
         in
         let repo = {
-          repo_root =
-            OpamFilename.Op.(repos_dir / OpamRepositoryName.to_string name);
           repo_name = name;
           repo_url = url;
           repo_trust = None;
@@ -210,10 +208,11 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     repos_definitions =
       OpamRepositoryName.Map.map (fun r ->
           OpamFile.Repo.safe_read
-            OpamRepositoryPath.(repo (create gt.root r.repo_name)) |>
+            OpamRepositoryPath.(repo (root gt.root r.repo_name)) |>
           OpamFile.Repo.with_root_url r.repo_url)
         repos_map;
     repo_opams = OpamRepositoryName.Map.empty;
+    repos_tmp = Hashtbl.create 1;
   } in
   let failed_repos, rt =
     OpamRepositoryCommand.update_with_auto_upgrade rt
@@ -554,7 +553,9 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   in
   OpamPackage.Set.iter (fun nv ->
       let opam = OpamSwitchState.opam st nv in
-      let orig_dir = match OpamFile.OPAM.metadata_dir opam with
+      let orig_dir =
+        match OpamFile.OPAM.get_metadata_dir
+              ~repos_roots:(OpamRepositoryPath.root gt.root) opam with
         | Some dir -> dir
         | None -> assert false
       in
@@ -620,7 +621,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
               OpamConsole.error_and_exit `Sync_error
                 "%s could not be obtained%s"
                 source_string (OpamStd.Option.to_string (fun s -> ": "^s) msg)
-            | Result () | Up_to_date () ->
+            | Result (_) | Up_to_date (_) ->
               link ?extra urlf dst;
               urlf)
     in
