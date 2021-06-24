@@ -15,15 +15,13 @@ open OpamProcess.Job.Op
 
 let bootstrap_packages ocamlv = [
   OpamPackage.Name.of_string "ocaml-base-compiler", Some (`Eq, ocamlv);
-  OpamPackage.Name.of_string "opam-depext",
-  Some (`Geq, OpamPackage.Version.of_string "1.1.0");
 ]
 
 let system_ocaml_package_name = OpamPackage.Name.of_string "ocaml-system"
 
 let wrapper_ocaml_package_name = OpamPackage.Name.of_string "ocaml"
 
-let ocaml_config_package = OpamPackage.of_string "ocaml-config.1"
+let ocaml_config_package = OpamPackage.of_string "ocaml-config.2"
 
 (* This package will be created solely for the bundle, and replaces
    ocaml-system *)
@@ -65,6 +63,8 @@ let opam_archive_url opamv =
 
 let output_extension = "tar.gz"
 
+let stdlib_output = output
+
 let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     packages_targets =
   OpamClientConfig.opam_init
@@ -87,7 +87,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   in
   let opamv = match opamv with
     | Some v -> v
-    | None -> OpamPackage.Version.of_string "2.0.0~rc2"
+    | None -> OpamPackage.Version.of_string "2.1.0~rc2"
   in
   let output = match output, packages with
     | Some f, _ ->
@@ -153,7 +153,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   OpamFilename.with_tmp_dir @@ fun tmp ->
   let opam_root = OpamFilename.Op.(tmp / "root") in
   OpamStateConfig.update ~root_dir:opam_root ();
-  let repos_dir = OpamFilename.Op.(tmp / "repos") in
+  (* let repos_dir = OpamFilename.Op.(tmp / "repos") in *)
   (* *** *)
   OpamConsole.header_msg "Initialising repositories";
   let gen_repo_name repos_map base =
@@ -543,7 +543,6 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   OpamFilename.mkdir target_links;
   let repo_file =
     OpamFile.Repo.create
-      ~opam_version:OpamVersion.current_nopatch
       ~dl_cache:[cache_dirname]
       ()
   in
@@ -749,7 +748,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     let buf = Bytes.create sz in
     let rec copy () =
       let len = input ic buf 0 sz in
-      if len <> 0 then (Pervasives.output oc buf 0 len; copy ())
+      if len <> 0 then (stdlib_output oc buf 0 len; copy ())
     in
     copy ();
     close_in ic;
