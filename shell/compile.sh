@@ -46,14 +46,42 @@ fi
 
 if [ -z "$YES" ]; then printf "\nPress enter to continue... "; read _; fi
 
-if [ ! -e has_depexts ]; then "$DIR/configure.sh"; fi
+"$DIR/configure.sh"
 
 start
 
 title "Compile: installing packages"
 
 echo "Output is in $LOG"
-logged_cmd "Compiling packages" opam install --yes %{install_packages}% %{doc?--with-doc:}% %{test?--with-test:}%
+
+# Redirect sudo to extract the commands
+rm -f "$DIR/needs_sudo"
+cat >${PREFIX}/bin/sudo <<EOF
+#!/bin/sh -ue
+echo "\$@" >>"$DIR/needs_sudo"
+exit 1
+EOF
+chmod +x ${PREFIX}/bin/sudo
+
+R=0
+logged_cmd "Compiling packages" opam install --confirm=unsafe-yes %{install_packages}% %{doc?--with-doc:}% %{test?--with-test:}% || R=$?
+
+rm -f ${PREFIX}/bin/sudo
+
+if [ "$R" -eq 10 ] && [ -s "$DIR/needs_sudo" ]; then
+  echo "You will be asked for 'sudo' access to install required system dependencies"
+  echo "through your package system:"
+  xargs -a "$DIR/needs_sudo" -L 1 echo "  "
+  printf "Press enter to continue... "
+  read _
+  xargs -a "$DIR/needs_sudo" -L 1 sudo
+  rm -f "$DIR/needs_sudo"
+  logged_cmd "Compiling packages" opam install --yes %{install_packages}% %{doc?--with-doc:}% %{test?--with-test:}%
+elif [ "$R" -ne 0 ]; then
+  exit "$R"
+fi
+
+
 logged_cmd "Cleaning up" opam clean --yes
 
 if [ -z "$DESTDIR" ]; then

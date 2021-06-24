@@ -9,12 +9,15 @@ title() {
   printf "\n\033[33m================\033[m %-45s \033[33m================\033[m\n\n" "$*"
 }
 logged_cmd() {
+  local R=0
   printf "$1... "
   shift
   echo "+ [ $1 ] $*" >>$LOG
-  "$@" >>$LOG 2>&1
+  "$@" >>$LOG 2>&1 || R=$?
   echo >>$LOG
-  printf "\033[32mdone\033[m\n"
+  if [ $R -eq 0 ]; then printf "\033[32mdone\033[m\n"; return
+  else echo; return $R
+  fi
 }
 
 start() {
