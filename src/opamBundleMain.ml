@@ -901,18 +901,19 @@ let man = [
 ]
 
 let create_bundle_command =
-  Term.(pure create_bundle $ ocamlv_arg $ opamv_arg $ repo_arg $ debug_arg $
+  Term.(const create_bundle $ ocamlv_arg $ opamv_arg $ repo_arg $ debug_arg $
         output_arg $ env_arg $ with_test_arg $ with_doc_arg $ yes_arg $
         self_extract_arg $
-        packages_arg),
-  Term.info "opam-bundle" ~man ~doc:
+        packages_arg)
+
+let info = Cmd.info "opam-bundle" ~man ~doc:
     "Creates standalone source bundle from opam packages"
 
 let () =
   OpamSystem.init ();
   try
-    match Term.eval ~catch:false create_bundle_command with
-    | `Error _ -> exit 1
+    match Cmd.eval_value ~catch:false (Cmd.v info create_bundle_command) with
+    | Error _ -> exit 1
     | _ -> exit 0
   with
   | e ->

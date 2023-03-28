@@ -11,7 +11,7 @@ depends: [
   "ocaml" {build}
   "ocamlfind" {build}
   "dune" {build & >= "2.8.5"}
-  "cmdliner" {build & >= "1.0.0"}
+  "cmdliner" {build & >= "1.1.0"}
   "opam-client" {build & >= "2.1.0"}
 ]
 build: [ "dune" "build" "-j" jobs "-p" name ]
