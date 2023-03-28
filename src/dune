@@ -1,0 +1,14 @@
+(executable
+ (name opamBundleMain)
+ (public_name opam-bundle)
+ (modes (native exe))
+ (flags -w A-4-44-70)
+ (modules opamBundleMain opamBundleScripts)
+ (libraries opam-client cmdliner opam-repository))
+
+(rule
+ (targets opamBundleScripts.ml)
+ (deps (source_tree ../shell) ../crunch.ml)
+ (action
+  (with-stdout-to %{targets}
+    (run ocaml ../crunch.ml %{deps}))))
