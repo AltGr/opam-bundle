@@ -3,17 +3,18 @@ name: "opam-bundle"
 version: "0.4"
 maintainer: "Louis Gesbert <louis.gesbert@ocamlpro.com>"
 authors: "Louis Gesbert <louis.gesbert@ocamlpro.com>"
-license: "GPL-3"
+license: "GPL-3.0-only"
 tags: "org:ocamlpro"
 homepage: "https://github.com/AltGr/opam-bundle"
 bug-reports: "https://github.com/AltGr/opam-bundle/issues"
 depends: [
   "ocaml" {build}
   "ocamlfind" {build}
+  "dune" {build & >= "2.8.5"}
   "cmdliner" {build & >= "1.0.0"}
   "opam-client" {build & >= "2.1.0"}
 ]
-build: make
+build: [ "dune" "build" "-j" jobs "-p" name ]
 dev-repo: "git+https://github.com/AltGr/opam-bundle"
 flags: plugin
 synopsis: "A tool that creates stand-alone source bundles from opam packages"

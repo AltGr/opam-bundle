@@ -4,3 +4,4 @@ opam-bundle
 *.o
 src/opamBundleScripts.ml
 *.install
+_build/
