@@ -1,0 +1,3 @@
+(cram
+ (applies_to *)
+ (deps %{bin:opam-bundle}))

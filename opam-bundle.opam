@@ -19,6 +19,8 @@ build: [
   "build"
   "-j"
   jobs
+  "@install"
+  "@runtest" {with-test}
 ]
 install : [
   "dune"
