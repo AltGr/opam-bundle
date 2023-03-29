@@ -14,7 +14,7 @@ depends: [
   "cmdliner" {build & >= "1.1.0"}
   "opam-client" {build & >= "2.1.0"}
 ]
-build: [ "dune" "build" "-j" jobs "-p" name ]
+build: [ "dune" "build" "-j" jobs "-p" name "@runtest" {with-test} ]
 dev-repo: "git+https://github.com/AltGr/opam-bundle"
 flags: plugin
 synopsis: "A tool that creates stand-alone source bundles from opam packages"
