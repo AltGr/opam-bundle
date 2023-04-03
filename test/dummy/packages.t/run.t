@@ -1,7 +1,6 @@
 This test verify different package specifications that could be used with `opam-bundle`.
 Every package used is a dummy package.
 
-Repo initial setup with two packages `foo` and `bar` that depends on `foo` and other required packages.
   $ export OPAMNOENVNOTICE=1
   $ export OPAMYES=1
   $ export OPAMROOT=$PWD/OPAMROOT
