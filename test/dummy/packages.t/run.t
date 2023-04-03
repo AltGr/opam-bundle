@@ -81,9 +81,6 @@ Package which isn"t included in repository.
   > ]
   > extra-source "opam-bundle.0.4.tar.gz" {
   >  src: "https://github.com/AltGr/opam-bundle/archive/refs/tags/0.4.tar.gz"
-  >  checksum: [
-  >   "sha256=60ca033d321dc146b6fce5056aefb24109f179e8df4e6eaca043089f3651d341"
-  >  ]
   > }
   > EOF
   $ cp compile4 foo.4
@@ -357,7 +354,7 @@ Bundle single package `bar` of version 2. That implies installation of its depen
   I'm launching bar v.2 !
 
 Cleaning up
-  $ rm -r BAR bar-bundle bar-bundle.tar.gz OPAMROOT
+  $ rm -r BAR bar-bundle bar-bundle.tar.gz
 
 
 ============================== Test 2 ==============================
@@ -498,7 +495,7 @@ has extra-source (opam-bundle archive 0.4) that should be also bundled. Forcing 
 installation of `bar.3`. Since `foo` was specified as argument to `opam-bundle` it installs additionally `foo`
 wrapper.
 
-  $ opam-bundle bar 'foo@foo.4' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar 'foo@foo.4' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/;s/md5=.*/md5=$HASH/'
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -525,6 +522,7 @@ wrapper.
   Continue ? [Y/n] y
   
   <><> Getting all archives <><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  [WARNING] Extra source opam-bundle.0.4.tar.gz of foo.4 from https://github.com/AltGr/opam-bundle/archive/refs/tags/0.4.tar.gz had no recorded checksum: adding md5=$HASH
   
   <><> Getting bootstrap packages <><><><><><><><><><><><><><><><><><><><><><><><>
   
