@@ -107,6 +107,11 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   in
   let env =
     match env with
+    | Some [] ->
+      OpamConsole.note "Empty environment";
+      OpamSysPoll.variables
+      |> List.map (fun (v,_) -> v, (lazy (Some (S "")), "fake"))
+      |> OpamVariable.Map.of_list
     | Some e ->
       let comment = "Manually defined" in
       List.map (fun s ->
@@ -117,6 +122,10 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
             OpamVariable.of_string s, (lazy (Some (B true)), comment))
         e
       |> OpamVariable.Map.of_list
+      |> OpamVariable.Map.union (fun _poll cli -> cli)
+        (OpamVariable.Map.of_list
+           (List.map (fun (v,x) -> v, (x, "Inferred from current system"))
+              OpamSysPoll.variables))
     | None ->
       let e =
         List.map (fun (v,x) -> v, (x, "Inferred from current system"))
@@ -141,7 +150,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   let packages_filter =
     let module L = OpamListCommand in
     OpamFormula.ands [
-      if OpamVariable.Map.is_empty env then Atom L.Any else Atom L.Available;
+      Atom L.Available;
       OpamFormula.ors [
         Atom (L.Solution (L.default_dependency_toggles,
                           bootstrap_packages ocamlv));
@@ -604,6 +613,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
             | Result () | Up_to_date () ->
               let hash = OpamHash.compute (OpamFilename.to_string f) in
               let dst = OpamRepository.cache_file target_cache hash in
+              OpamFilename.mkdir (OpamFilename.dirname dst);
               OpamFilename.move ~src:f ~dst;
               OpamConsole.warning
                 "%s had no recorded checksum: adding %s"
