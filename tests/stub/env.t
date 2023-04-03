@@ -316,18 +316,21 @@ Bundle package `baz`, with empty constraint specified in '--environment' option.
 all dependencies.
 
   $ opam-bundle baz --environment --repository ./REPO --ocaml=4.14.0 -y 2>&1
+  [NOTE] Empty environment
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
   
   <><> Resolving package set ><><><><><><><><><><><><><><><><><><><><><><><><><><>
   The following packages will be included:
+    - bar.1
     - baz.1
+    - foo.1
     - ocaml.4.14.0
     - ocaml-base-compiler.4.14.0
     - ocaml-bootstrap.4.14.0
     - ocaml-config.2
-  According to the packages' metadata, the bundle should be installable on any arch/OS.
+  The bundle will be installable on systems matching the following: os != "cygwin" & os != "linux"
   [NOTE] Opam system sandboxing (introduced in 2.0) will be disabled in the bundle. You need to trust that the build scripts of the included packages don't write outside of their build directory and dest dir.
   Continue ? [Y/n] y
   
@@ -348,17 +351,27 @@ all dependencies.
   baz-bundle/opam-full-2.1.0-rc2.tar.gz
   baz-bundle/repo/
   baz-bundle/repo/archives/
+  baz-bundle/repo/archives/bar.1/
+  baz-bundle/repo/archives/bar.1/compile.tar.gz
   baz-bundle/repo/archives/baz.1/
   baz-bundle/repo/archives/baz.1/compile.tar.gz
+  baz-bundle/repo/archives/foo.1/
+  baz-bundle/repo/archives/foo.1/compile.tar.gz
   baz-bundle/repo/archives/ocaml-base-compiler.4.14.0/
   baz-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tar.gz
   baz-bundle/repo/archives/ocaml.4.14.0/
   baz-bundle/repo/archives/ocaml.4.14.0/compile.tar.gz
   baz-bundle/repo/cache/
   baz-bundle/repo/packages/
+  baz-bundle/repo/packages/bar/
+  baz-bundle/repo/packages/bar/bar.1/
+  baz-bundle/repo/packages/bar/bar.1/opam
   baz-bundle/repo/packages/baz/
   baz-bundle/repo/packages/baz/baz.1/
   baz-bundle/repo/packages/baz/baz.1/opam
+  baz-bundle/repo/packages/foo/
+  baz-bundle/repo/packages/foo/foo.1/
+  baz-bundle/repo/packages/foo/foo.1/opam
   baz-bundle/repo/packages/ocaml-base-compiler/
   baz-bundle/repo/packages/ocaml-base-compiler/ocaml-base-compiler.4.14.0/
   baz-bundle/repo/packages/ocaml-base-compiler/ocaml-base-compiler.4.14.0/opam
