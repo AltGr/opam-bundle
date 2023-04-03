@@ -604,6 +604,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
             | Result () | Up_to_date () ->
               let hash = OpamHash.compute (OpamFilename.to_string f) in
               let dst = OpamRepository.cache_file target_cache hash in
+              OpamFilename.mkdir (OpamFilename.dirname dst);
               OpamFilename.move ~src:f ~dst;
               OpamConsole.warning
                 "%s had no recorded checksum: adding %s"

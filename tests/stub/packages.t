@@ -521,7 +521,7 @@ has extra-source (opam-bundle archive 0.4) that should be also bundled. Forcing 
 installation of `bar.3`. Since `foo` was specified as argument to `opam-bundle` it installs additionally `foo`
 wrapper.
 
-  $ opam-bundle bar 'foo@foo.4' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/;s/md5=.*/md5=$HASH/' | sed 's/.* No such file or directory/mv error/g'
+  $ opam-bundle bar 'foo@foo.4' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/;s/md5=.*/md5=$HASH/'
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -548,34 +548,106 @@ wrapper.
   Continue ? [Y/n] y
   
   <><> Getting all archives <><><><><><><><><><><><><><><><><><><><><><><><><><><>
-  Fatal error:
-  mv error"
-
-Full error is
-"/usr/bin/mv /tmp/build_e9e480_dune/opam-1420667-a450af/foo.4 /tmp/build_e9e480_dune/opam-1420667-81a3f8/bar-bundle/repo/cache/md5/fa/fa3f5d536909bb625ae9f77392261a3f" exited with code 1 "/usr/bin/mv: cannot move '/tmp/build_e9e480_dune/opam-1420667-a450af/foo.4' to '/tmp/build_e9e480_dune/opam-1420667-81a3f8/bar-bundle/repo/cache/md5/fa/fa3f5d536909bb625ae9f77392261a3f': No such file or directory"
+  [WARNING] Extra source repo of foo.4 from file://./REPO/repo had no recorded checksum: adding md5=$HASH
+  
+  <><> Getting bootstrap packages <><><><><><><><><><><><><><><><><><><><><><><><>
+  
+  <><> Building bundle ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  Done. Bundle generated as $TESTCASE_ROOT/bar-bundle.tar.gz
 
   $ tar xvf bar-bundle.tar.gz | grep -v sha256 | grep -v md5 | sort
-  tar: bar-bundle.tar.gz: Cannot open: No such file or directory
-  tar: Error is not recoverable: exiting now
+  bar-bundle/
+  bar-bundle/bootstrap.sh
+  bar-bundle/common.sh
+  bar-bundle/compile.sh
+  bar-bundle/configure.sh
+  bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/repo/
+  bar-bundle/repo/archives/
+  bar-bundle/repo/archives/bar.3/
+  bar-bundle/repo/archives/bar.3/compile3.tar.gz
+  bar-bundle/repo/archives/foo.4/
+  bar-bundle/repo/archives/foo.4/foo.4.tar.gz
+  bar-bundle/repo/archives/foo.4/repo
+  bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/
+  bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tar.gz
+  bar-bundle/repo/archives/ocaml.4.14.0/
+  bar-bundle/repo/archives/ocaml.4.14.0/compile.tar.gz
+  bar-bundle/repo/cache/
+  bar-bundle/repo/packages/
+  bar-bundle/repo/packages/bar/
+  bar-bundle/repo/packages/bar/bar.3/
+  bar-bundle/repo/packages/bar/bar.3/files/
+  bar-bundle/repo/packages/bar/bar.3/files/test.patch
+  bar-bundle/repo/packages/bar/bar.3/opam
+  bar-bundle/repo/packages/foo/
+  bar-bundle/repo/packages/foo/foo.4/
+  bar-bundle/repo/packages/foo/foo.4/opam
+  bar-bundle/repo/packages/ocaml-base-compiler/
+  bar-bundle/repo/packages/ocaml-base-compiler/ocaml-base-compiler.4.14.0/
+  bar-bundle/repo/packages/ocaml-base-compiler/ocaml-base-compiler.4.14.0/opam
+  bar-bundle/repo/packages/ocaml-bootstrap/
+  bar-bundle/repo/packages/ocaml-bootstrap/ocaml-bootstrap.4.14.0/
+  bar-bundle/repo/packages/ocaml-bootstrap/ocaml-bootstrap.4.14.0/opam
+  bar-bundle/repo/packages/ocaml-config/
+  bar-bundle/repo/packages/ocaml-config/ocaml-config.2/
+  bar-bundle/repo/packages/ocaml-config/ocaml-config.2/opam
+  bar-bundle/repo/packages/ocaml/
+  bar-bundle/repo/packages/ocaml/ocaml.4.14.0/
+  bar-bundle/repo/packages/ocaml/ocaml.4.14.0/opam
+  bar-bundle/repo/repo
 
   $ sh ./bar-bundle/compile.sh ../BAR
-  sh: 0: cannot open ./bar-bundle/compile.sh: No such file
-  [2]
+  This bundle will compile the application to $TESTCASE_ROOT/bar-bundle, and put wrappers into
+  ../BAR/bin. You will need to retain $TESTCASE_ROOT/bar-bundle for the wrappers to work.
+  
+  Press enter to continue... 
+  ================ Bootstrap: checking for prerequisites         ================
+  
+  Checking for cc... found
+  Checking for make... found
+  Checking for wget curl... found
+  Checking for patch... found
+  Checking for unzip... found
+  Checking for bunzip2... found
+  Checking for rsync... found
+  
+  ================ Bootstrap: compiling OCaml                    ================
+  
+  This may take a while. Output is in $TESTCASE_ROOT/bar-bundle/bootstrap.log
+  Uncompressing... done
+  Configuring... done
+  Compiling... done
+  Installing to temp prefix... done
+  Already compiled opam found
+  
+  ================ Configure: initialising opam                  ================
+  
+  Output is in $TESTCASE_ROOT/bar-bundle/configure.log
+  Initialising... done
+  Creating sandbox... done
+  
+  ================ Compile: installing packages                  ================
+  
+  Output is in $TESTCASE_ROOT/bar-bundle/compile.log
+  Compiling packages... done
+  Cleaning up... done
+  Wrapper bar installed successfully.
+  Wrapper foo installed successfully.
 
   $ opam exec --root ./bar-bundle/opam -- foo
-  [ERROR] Opam has not been initialised, please run `opam init'
-  [50]
+  I'm launching with patch foo v.4 !
   $ opam exec --root ./bar-bundle/opam -- bar
-  [ERROR] Opam has not been initialised, please run `opam init'
-  [50]
+  I'm launching with patch bar v.3 !
   $ find BAR | sort
-  find: 'BAR': No such file or directory
+  BAR
+  BAR/bin
+  BAR/bin/bar
+  BAR/bin/foo
   $ BAR/bin/foo
-  BAR/bin/foo: not found
-  [127]
+  I'm launching with patch foo v.4 !
   $ BAR/bin/bar
-  BAR/bin/bar: not found
-  [127]
+  I'm launching with patch bar v.3 !
 
 
 
