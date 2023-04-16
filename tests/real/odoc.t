@@ -19,98 +19,44 @@ This test verify bundling of real package `odoc` with compiler version 4.02.3 an
   [opam.ocaml.org] Initialised
   
   <><> Resolving package set ><><><><><><><><><><><><><><><><><><><><><><><><><><>
-  [ERROR] No solution for odoc & ocaml-bootstrap.4.02.3:   * Incompatible packages:
-              - ocaml-bootstrap
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler < 3.08 -> ocaml < 4.02.3
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml < 4.02.3
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.03.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.04.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.04.1
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.04.2
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.05.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.06.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.06.1
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.07.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.07.1
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.08.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.08.1
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.09.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.09.1
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.10.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.10.1
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.10.2
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.11.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.11.1
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.11.2
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.12.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.12.1
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.13.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.13.1
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.14.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 4.14.1
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 5.0.0
-              no matching version
-            * Missing dependency:
-              - ocaml-bootstrap -> ocaml -> ocaml-config -> ocaml-base-compiler >= 3.08.0~ -> ocaml >= 5.01.0
-              no matching version
+  The following packages will be included:
+    - astring.0.8.3
+    - base-bigarray.base
+    - base-bytes.base
+    - base-ocamlbuild.base
+    - base-threads.base
+    - base-unix.base
+    - camlp-streams.5.0.1
+    - cmdliner.1.0.2
+    - cppo.1.6.9
+    - dune.3.7.1
+    - fmt.0.8.5
+    - fpath.0.7.2
+    - ocaml.4.02.3
+    - ocaml-base-compiler.4.02.3
+    - ocaml-bootstrap.4.02.3
+    - ocaml-config.1
+    - ocaml-secondary-compiler.4.08.1-1
+    - ocamlbuild.0
+    - ocamlfind.1.9.1
+    - ocamlfind-secondary.1.9.1
+    - odoc.2.2.0
+    - odoc-parser.2.0.0
+    - re.1.10.3
+    - result.1.4
+    - seq.0.3.1
+    - topkg.1.0.0
+    - tyxml.4.5.0
+    - uchar.0.0.2
+    - uutf.1.0.2
+  The bundle will be installable on systems matching the following: !(os = $OS
+  [NOTE] Opam system sandboxing (introduced in 2.0) will be disabled in the bundle. You need to trust that the build scripts of the included packages don't write outside of their build directory and dest dir.
+  Continue ? [Y/n] y
   
+  <><> Getting all archives <><><><><><><><><><><><><><><><><><><><><><><><><><><>
   
+  <><> Getting bootstrap packages <><><><><><><><><><><><><><><><><><><><><><><><>
+  [ERROR] Opam archive at https://github.com/ocaml/opam/releases/download/2.0/opam-full-2.0.tar.gz could not be obtained: curl error code 404
   $ sh ./odoc-bundle.sh -y
   sh: 0: cannot open ./odoc-bundle.sh: No such file
   [2]

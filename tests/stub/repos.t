@@ -361,7 +361,13 @@ Trying bundle foo package with a repository that hasn't required package (ocaml-
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
-  [ERROR] Package ocaml-config.2 not found in the repositories
+  
+  <><> Resolving package set ><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  [ERROR] No solution for foo & ocaml-bootstrap.4.14.0:   * Missing dependency:
+              - ocaml-config
+              unknown package
+  
+  
 
 
 
