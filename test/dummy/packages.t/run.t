@@ -288,7 +288,7 @@ Bundle single package `bar` of version 2. That implies installation of its depen
   bar-bundle/common.sh
   bar-bundle/compile.sh
   bar-bundle/configure.sh
-  bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/opam-full-2.1.4.tar.gz
   bar-bundle/patches/
   bar-bundle/repo/
   bar-bundle/repo/archives/
@@ -416,7 +416,7 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
   bar-bundle/common.sh
   bar-bundle/compile.sh
   bar-bundle/configure.sh
-  bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/opam-full-2.1.4.tar.gz
   bar-bundle/patches/
   bar-bundle/repo/
   bar-bundle/repo/archives/
@@ -557,7 +557,7 @@ wrapper.
   bar-bundle/common.sh
   bar-bundle/compile.sh
   bar-bundle/configure.sh
-  bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/opam-full-2.1.4.tar.gz
   bar-bundle/patches/
   bar-bundle/repo/
   bar-bundle/repo/archives/

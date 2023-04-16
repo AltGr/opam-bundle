@@ -19,14 +19,8 @@ build: [
   "build"
   "-j"
   jobs
-  "@install"
-  "@runtest" {with-test}
-]
-install : [
-  "dune"
-  "install"
-  "-j"
-  jobs
+  "-p"
+  name
 ]
 dev-repo: "git+https://github.com/AltGr/opam-bundle"
 flags: plugin

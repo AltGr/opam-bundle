@@ -191,7 +191,7 @@ are available on linux os (`foo` not included).
   baz-bundle/common.sh
   baz-bundle/compile.sh
   baz-bundle/configure.sh
-  baz-bundle/opam-full-2.1.0-rc2.tar.gz
+  baz-bundle/opam-full-2.1.4.tar.gz
   baz-bundle/patches/
   baz-bundle/repo/
   baz-bundle/repo/archives/
@@ -268,7 +268,7 @@ are available on cygwin os (`bar` not included).
   baz-bundle/common.sh
   baz-bundle/compile.sh
   baz-bundle/configure.sh
-  baz-bundle/opam-full-2.1.0-rc2.tar.gz
+  baz-bundle/opam-full-2.1.4.tar.gz
   baz-bundle/patches/
   baz-bundle/repo/
   baz-bundle/repo/archives/
@@ -347,7 +347,7 @@ all dependencies.
   baz-bundle/common.sh
   baz-bundle/compile.sh
   baz-bundle/configure.sh
-  baz-bundle/opam-full-2.1.0-rc2.tar.gz
+  baz-bundle/opam-full-2.1.4.tar.gz
   baz-bundle/patches/
   baz-bundle/repo/
   baz-bundle/repo/archives/
