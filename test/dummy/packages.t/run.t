@@ -68,6 +68,13 @@ Repo setup
 === Foo packages ===
 Package which isn"t included in repository.
   $ mkdir foo.4
+  $ cat > foo.4/test.patch << EOF
+  > --- foo.4/compile4
+  > +++ foo.4/compile4
+  > @@ -1 +1 @@
+  > -echo "I'm launching \$(basename \${0}) v.4 \$@!"
+  > +echo "I'm launching with patch \$(basename \${0}) v.4 \$@!"
+  > EOF
   $ cat > foo.4/opam << EOF
   > opam-version: "2.0"
   > version: "4"
@@ -81,6 +88,7 @@ Package which isn"t included in repository.
   > extra-source "opam-bundle.0.4.tar.gz" {
   >  src: "https://github.com/AltGr/opam-bundle/archive/refs/tags/0.4.tar.gz"
   > }
+  > patches : ["test.patch"]
   > EOF
   $ cp compile4 foo.4
 Repository packages
@@ -131,7 +139,7 @@ Repository packages
   > }
   > EOF
 Bar packages.
-  $ mkdir -p REPO/packages/bar/bar.1 REPO/packages/bar/bar.2 REPO/packages/bar/bar.3
+  $ mkdir -p REPO/packages/bar/bar.1 REPO/packages/bar/bar.2 REPO/packages/bar/bar.3/files
   $ cat > REPO/packages/bar/bar.1/opam << EOF
   > opam-version: "2.0"
   > version: "1"
@@ -164,6 +172,14 @@ Bar packages.
   >  checksum: "sha256=$SHA2"
   > }
   > EOF
+  $ cat > REPO/packages/bar/bar.3/files/test.patch << EOF
+  > --- bar/compile3
+  > +++ bar/compile3
+  > @@ -1 +1 @@
+  > -echo "I'm launching \$(basename \${0}) v.3 \$@!"
+  > +echo "I'm launching with patch \$(basename \${0}) v.3 \$@!"
+  > EOF
+  $ SHAEXTRA=`openssl sha256 REPO/packages/bar/bar.3/files/test.patch | cut -d ' ' -f 2`
   $ cat > REPO/packages/bar/bar.3/opam << EOF
   > opam-version: "2.0"
   > version: "3"
@@ -175,6 +191,7 @@ Bar packages.
   >  "ocaml" {>= "4.14.0"}
   >  "foo" {>= "3"}
   > ]
+  > patches : ["test.patch"]
   > url {
   >  src: "file://./compile3.tgz"
   >  checksum: "sha256=$SHA3"
@@ -412,6 +429,8 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
   bar-bundle/repo/packages/
   bar-bundle/repo/packages/bar/
   bar-bundle/repo/packages/bar/bar.3/
+  bar-bundle/repo/packages/bar/bar.3/files/
+  bar-bundle/repo/packages/bar/bar.3/files/test.patch
   bar-bundle/repo/packages/bar/bar.3/opam
   bar-bundle/repo/packages/foo/
   bar-bundle/repo/packages/foo/foo.3/
@@ -471,7 +490,7 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
   $ opam exec --root ./bar-bundle/opam -- foo
   I'm launching foo v.3 !
   $ opam exec --root ./bar-bundle/opam -- bar
-  I'm launching bar v.3 !
+  I'm launching with patch bar v.3 !
   $ find BAR
   BAR
   BAR/bin
@@ -480,7 +499,7 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
   $ BAR/bin/foo
   I'm launching foo v.3 !
   $ BAR/bin/bar
-  I'm launching bar v.3 !
+  I'm launching with patch bar v.3 !
 
 Cleaning up
   $ rm -r BAR bar-bundle bar-bundle.tar.gz
@@ -550,6 +569,8 @@ wrapper.
   bar-bundle/repo/packages/
   bar-bundle/repo/packages/bar/
   bar-bundle/repo/packages/bar/bar.3/
+  bar-bundle/repo/packages/bar/bar.3/files/
+  bar-bundle/repo/packages/bar/bar.3/files/test.patch
   bar-bundle/repo/packages/bar/bar.3/opam
   bar-bundle/repo/packages/foo/
   bar-bundle/repo/packages/foo/foo.4/
@@ -607,18 +628,18 @@ wrapper.
   Wrapper foo installed successfully.
 
   $ opam exec --root ./bar-bundle/opam -- foo
-  I'm launching foo v.4 !
+  I'm launching with patch foo v.4 !
   $ opam exec --root ./bar-bundle/opam -- bar
-  I'm launching bar v.3 !
+  I'm launching with patch bar v.3 !
   $ find BAR
   BAR
   BAR/bin
   BAR/bin/foo
   BAR/bin/bar
   $ BAR/bin/foo
-  I'm launching foo v.4 !
+  I'm launching with patch foo v.4 !
   $ BAR/bin/bar
-  I'm launching bar v.3 !
+  I'm launching with patch bar v.3 !
 
 
 
