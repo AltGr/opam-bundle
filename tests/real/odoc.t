@@ -77,10 +77,42 @@ This test verify bundling of real package `odoc` with compiler version 4.02.3 an
   ================ Bootstrap: compiling OCaml                    ================
   
   This may take a while. Output is in $TESTCASE_ROOT/odoc-bundle/bootstrap.log
-  Uncompressing... 
+  Uncompressing... done
+  Applying patches... done
+  Configuring... done
+  Compiling... done
+  Installing to temp prefix... done
   
-  Something went wrong, see log in $TESTCASE_ROOT/odoc-bundle/bootstrap.log
-  [2]
+  ================ Bootstrap: compiling opam                     ================
+  
+  This may take a while. Output is in $TESTCASE_ROOT/odoc-bundle/bootstrap.log
+  Uncompressing... done
+  Configuring... done
+  Compiling extra dependencies... done
+  Compiling... done
+  Installing to temp prefix... done
+  
+  ================ Configure: initialising opam                  ================
+  
+  Output is in $TESTCASE_ROOT/odoc-bundle/configure.log
+  Initialising... done
+  Creating sandbox... done
+  
+  ================ Compile: installing packages                  ================
+  
+  Output is in $TESTCASE_ROOT/odoc-bundle/compile.log
+  Compiling packages... done
+  Cleaning up... done
+  
+  All compiled within $TESTCASE_ROOT/odoc-bundle. To use the compiled packages:
+  
+    - either re-run odoc-bundle/compile.sh with a PREFIX argument to install command wrappers
+      (it won't recompile everything)
+  
+    - or run the following to update the environment in the current shell, so that
+      they are in your PATH:
+        export PATH="$TESTCASE_ROOT/odoc-bundle/bootstrap/bin:$PATH"; eval $(opam env --root "$TESTCASE_ROOT/odoc-bundle/opam" --set-root)
+  
   $ sh ./odoc-bundle/compile.sh ../ODOC
   This bundle will compile the application to $TESTCASE_ROOT/odoc-bundle, and put wrappers into
   ../ODOC/bin. You will need to retain $TESTCASE_ROOT/odoc-bundle for the wrappers to work.
@@ -95,23 +127,16 @@ This test verify bundling of real package `odoc` with compiler version 4.02.3 an
   Checking for unzip... found
   Checking for bunzip2... found
   Checking for rsync... found
-  
-  ================ Bootstrap: compiling OCaml                    ================
-  
-  This may take a while. Output is in $TESTCASE_ROOT/odoc-bundle/bootstrap.log
-  Uncompressing... 
-  
-  Something went wrong, see log in $TESTCASE_ROOT/odoc-bundle/bootstrap.log
+  Already compiled OCaml found
+  Already compiled opam found
+  Already initialised opam sandbox found
   
   ================ Compile: installing packages                  ================
   
   Output is in $TESTCASE_ROOT/odoc-bundle/compile.log
-  ./odoc-bundle/compile.sh: 59: cannot create $TESTCASE_ROOT/odoc-bundle/bootstrap/bin/sudo: Directory nonexistent
-  chmod: cannot access '$TESTCASE_ROOT/odoc-bundle/bootstrap/bin/sudo': No such file or directory
-  Compiling packages... 
-  
-  Something went wrong, see log in $TESTCASE_ROOT/odoc-bundle/compile.log
-  [50]
+  Compiling packages... done
+  Cleaning up... done
+  Wrapper odoc installed successfully.
   $ ODOC/bin/odoc
-  ODOC/bin/odoc: not found
-  [127]
+  Available subcommands: compile, link, html-generate, support-files, man-generate, latex-generate, html-url, latex-url, support-files-targets, errors, html-targets, man-targets, latex-targets, compile-deps, compile-targets, html-fragment, html, man, latex, link-deps, css, html-deps
+  See --help for more information.

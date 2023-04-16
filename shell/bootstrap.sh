@@ -40,14 +40,23 @@ if [ -n "$MISSING" ]; then
     exit 10
 fi
 
+apply_patches() {
+    for patch in $(ls ../patches/*.patch | sort); do
+        patch -p1 < $patch
+    done
+}
+
 if [ -x "$PREFIX/bin/ocamlc" ]; then
    echo "Already compiled OCaml found"
 else
    title "Bootstrap: compiling OCaml"
 
    echo "This may take a while. Output is in $LOG"
-   logged_cmd "Uncompressing" tar xzf repo/archives/ocaml-base-compiler."%{ocamlv}%"/*
+   logged_cmd "Uncompressing" tar xzf repo/archives/ocaml-base-compiler."%{ocamlv}%"/*.tar.gz
    cd "ocaml-%{ocamlv}%"
+   if [ -d "../patches" ] ; then
+      logged_cmd "Applying patches" apply_patches
+   fi
    logged_cmd "Configuring" ./configure -prefix "$PREFIX"
    logged_cmd "Compiling" make world world.opt
    logged_cmd "Installing to temp prefix" make install
