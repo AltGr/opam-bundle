@@ -8,6 +8,8 @@ This test verify bundling of real package `opam-bundle` of version 0.4.
   $ opam --version
   2.1.4
   $ opam-bundle "opam-bundle@https://github.com/AltGr/opam-bundle/archive/refs/tags/0.4.tar.gz" opam-client.2.0.10 --self --opam=2.1 --ocaml=4.14.0 --yes 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.14.0.
+  Opam version is set to 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -60,13 +62,88 @@ This test verify bundling of real package `opam-bundle` of version 0.4.
   <><> Getting all archives <><><><><><><><><><><><><><><><><><><><><><><><><><><>
   
   <><> Getting bootstrap packages <><><><><><><><><><><><><><><><><><><><><><><><>
-  [ERROR] Opam archive at https://github.com/ocaml/opam/releases/download/2.1/opam-full-2.1.tar.gz could not be obtained: curl error code 404
+  
+  <><> Building bundle ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  Done. Bundle generated as $TESTCASE_ROOT/opam-bundle-bundle.tar.gz
+  Self-extracting archive generated as $TESTCASE_ROOT/opam-bundle-bundle.sh
   $ sh ./opam-bundle-bundle.sh -y
-  sh: 0: cannot open ./opam-bundle-bundle.sh: No such file
-  [2]
+  This bundle will compile the application to $TESTCASE_ROOT/opam-bundle-bundle, WITHOUT installing
+  wrappers anywhere else.
+  
+  ================ Bootstrap: checking for prerequisites         ================
+  
+  Checking for cc... found
+  Checking for make... found
+  Checking for wget curl... found
+  Checking for patch... found
+  Checking for unzip... found
+  Checking for bunzip2... found
+  Checking for rsync... found
+  
+  ================ Bootstrap: compiling OCaml                    ================
+  
+  This may take a while. Output is in $TESTCASE_ROOT/opam-bundle-bundle/bootstrap.log
+  Uncompressing... done
+  Configuring... done
+  Compiling... done
+  Installing to temp prefix... done
+  
+  ================ Bootstrap: compiling opam                     ================
+  
+  This may take a while. Output is in $TESTCASE_ROOT/opam-bundle-bundle/bootstrap.log
+  Uncompressing... done
+  Configuring... done
+  Compiling extra dependencies... done
+  Compiling... done
+  Installing to temp prefix... done
+  
+  ================ Configure: initialising opam                  ================
+  
+  Output is in $TESTCASE_ROOT/opam-bundle-bundle/configure.log
+  Initialising... done
+  Creating sandbox... done
+  
+  ================ Compile: installing packages                  ================
+  
+  Output is in $TESTCASE_ROOT/opam-bundle-bundle/compile.log
+  Compiling packages... done
+  Cleaning up... done
+  
+  All compiled within $TESTCASE_ROOT/opam-bundle-bundle. To use the compiled packages:
+  
+    - either re-run opam-bundle-bundle/compile.sh with a PREFIX argument to install command wrappers
+      (it won't recompile everything)
+  
+    - or run the following to update the environment in the current shell, so that
+      they are in your PATH:
+        export PATH="$TESTCASE_ROOT/opam-bundle-bundle/bootstrap/bin:$PATH"; eval $(opam env --root "$TESTCASE_ROOT/opam-bundle-bundle/opam" --set-root)
+  
   $ sh ./opam-bundle-bundle/compile.sh ../BUNDLE
-  sh: 0: cannot open ./opam-bundle-bundle/compile.sh: No such file
-  [2]
+  This bundle will compile the application to $TESTCASE_ROOT/opam-bundle-bundle, and put wrappers into
+  ../BUNDLE/bin. You will need to retain $TESTCASE_ROOT/opam-bundle-bundle for the wrappers to work.
+  
+  Press enter to continue... 
+  ================ Bootstrap: checking for prerequisites         ================
+  
+  Checking for cc... found
+  Checking for make... found
+  Checking for wget curl... found
+  Checking for patch... found
+  Checking for unzip... found
+  Checking for bunzip2... found
+  Checking for rsync... found
+  Already compiled OCaml found
+  Already compiled opam found
+  Already initialised opam sandbox found
+  
+  ================ Compile: installing packages                  ================
+  
+  Output is in $TESTCASE_ROOT/opam-bundle-bundle/compile.log
+  Compiling packages... done
+  Cleaning up... done
+  Wrapper opam-bundle installed successfully.
   $ BUNDLE/bin/opam-bundle
-  BUNDLE/bin/opam-bundle: not found
-  [127]
+  opam-bundle: required argument PACKAGE is missing
+  Usage: opam-bundle [OPTION]… PACKAGE…
+  Try 'opam-bundle --help' for more information.
+  [1]

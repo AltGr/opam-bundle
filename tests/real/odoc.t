@@ -8,6 +8,8 @@ This test verify bundling of real package `odoc` with compiler version 4.02.3 an
   $ opam --version
   2.1.4
   $ opam-bundle odoc --ocaml=4.02.3 --opam=2.0 --self --yes 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.02.3.
+  Opam version is set to 2.0.10.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS

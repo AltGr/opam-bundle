@@ -162,6 +162,8 @@ Bundle package `baz`, without '--environment' option. That should lookup current
 are available on linux os (`foo` not included).
 
   $ opam-bundle baz --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.14.0.
+  No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -196,7 +198,7 @@ are available on linux os (`foo` not included).
   baz-bundle/common.sh
   baz-bundle/compile.sh
   baz-bundle/configure.sh
-  baz-bundle/opam-full-2.1.0-rc2.tar.gz
+  baz-bundle/opam-full-2.1.4.tar.gz
   baz-bundle/repo/
   baz-bundle/repo/archives/
   baz-bundle/repo/archives/bar.1/
@@ -241,6 +243,8 @@ Bundle package `baz`, with os="cygwin" constraint specified in '--environment' o
 are available on cygwin os (`bar` not included).
 
   $ opam-bundle baz --environment os="cygwin" --repository ./REPO --ocaml=4.14.0 -y 2>&1
+  OCaml version is set to 4.14.0.
+  No opam version selected, will use 2.1.4.
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
@@ -271,7 +275,7 @@ are available on cygwin os (`bar` not included).
   baz-bundle/common.sh
   baz-bundle/compile.sh
   baz-bundle/configure.sh
-  baz-bundle/opam-full-2.1.0-rc2.tar.gz
+  baz-bundle/opam-full-2.1.4.tar.gz
   baz-bundle/repo/
   baz-bundle/repo/archives/
   baz-bundle/repo/archives/baz.1/
@@ -316,6 +320,8 @@ Bundle package `baz`, with empty constraint specified in '--environment' option.
 all dependencies.
 
   $ opam-bundle baz --environment --repository ./REPO --ocaml=4.14.0 -y 2>&1
+  OCaml version is set to 4.14.0.
+  No opam version selected, will use 2.1.4.
   [NOTE] Empty environment
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -348,7 +354,7 @@ all dependencies.
   baz-bundle/common.sh
   baz-bundle/compile.sh
   baz-bundle/configure.sh
-  baz-bundle/opam-full-2.1.0-rc2.tar.gz
+  baz-bundle/opam-full-2.1.4.tar.gz
   baz-bundle/repo/
   baz-bundle/repo/archives/
   baz-bundle/repo/archives/bar.1/
@@ -397,6 +403,8 @@ Trying bundle package `bar` on cygwin. That will fail, since this package isn't 
 
 
   $ opam-bundle bar --environment os="cygwin" --repository ./REPO --ocaml=4.14.0 -y 2>&1
+  OCaml version is set to 4.14.0.
+  No opam version selected, will use 2.1.4.
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised

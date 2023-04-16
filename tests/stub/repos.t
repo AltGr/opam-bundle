@@ -273,6 +273,8 @@ Bundle package foo with and specifyng two repositories with `ocaml.4.12` and sec
 only `ocaml.4.14` packages. We are forcing here to use 4.12 from second switch.
 
   $ opam-bundle foo --repository ./REPO1 --repository ./REPO3 --ocaml=4.12.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.12.0.
+  No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -312,6 +314,8 @@ Bundle packages foo and bar with specifying three repositories with `foo` and se
 package and third containing required ocaml-config.2. We are forcing here to use 4.13 from switch.
 
   $ opam-bundle foo bar --repository ./REPO1 --repository ./REPO2 --repository ./REPO3 --ocaml=4.13.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.13.0.
+  No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -352,6 +356,8 @@ package and third containing required ocaml-config.2. We are forcing here to use
 Trying bundle foo package with a repository that hasn't required package (ocaml-config). That should fail.
 
   $ opam-bundle foo --repository ./REPO1 --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.14.0.
+  No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -377,6 +383,8 @@ Trying bundle foo package with a repository that hasn't required package (ocaml-
 Trying bundle foo package with a repositories that hasn't required ocaml version. That should fail.
 
   $ opam-bundle foo --repository ./REPO1 --repository ./REPO3 --ocaml=4.13.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.13.0.
+  No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
