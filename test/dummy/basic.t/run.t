@@ -10,8 +10,8 @@ Repo initial setup with two packages `foo` and `bar` that depends on `foo` and o
   > echo "I'm launching \$(basename \${0}) \$@!"
   > EOF
   $ chmod +x compile
-  $ tar czf compile.tgz compile
-  $ SHA=`openssl sha256 compile.tgz | cut -d ' ' -f 2`
+  $ tar czf compile.tar.gz compile
+  $ SHA=`openssl sha256 compile.tar.gz | cut -d ' ' -f 2`
 OCaml archive setup
   $ mkdir ocaml-4.14.0
   $ cat > ocaml-4.14.0/configure << EOF
@@ -37,8 +37,8 @@ OCaml archive setup
   > EOF
   $ cp ocaml-4.14.0/ocaml ocaml-4.14.0/ocamlc
   $ cp ocaml-4.14.0/ocaml ocaml-4.14.0/ocamlopt
-  $ tar czf ocaml.tgz ocaml-4.14.0
-  $ OCAMLSHA=`openssl sha256 ocaml.tgz | cut -d ' ' -f 2`
+  $ tar czf ocaml.tar.gz ocaml-4.14.0
+  $ OCAMLSHA=`openssl sha256 ocaml.tar.gz | cut -d ' ' -f 2`
 Repo setup
   $ mkdir -p REPO/packages/
   $ cat > REPO/repo << EOF
@@ -53,7 +53,7 @@ Foo package.
   >  [ "cp" "compile" "%{bin}%/%{name}%" ]
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -67,7 +67,7 @@ Bar package.
   > ]
   > depends: [ "foo" ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -90,7 +90,7 @@ Ocaml.4.14.0 package.
   >   "ocaml-config"
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -104,7 +104,7 @@ Ocaml-base-compiler.4.14.0 package.
   >  [ "cp" "compile" "%{bin}%/ocaml" ]
   > ]
   > url {
-  >  src: "file://./ocaml.tgz"
+  >  src: "file://./ocaml.tar.gz"
   >  checksum: "sha256=$OCAMLSHA"
   > }
   > EOF
@@ -160,12 +160,13 @@ Bundle single package `foo`.
   foo-bundle/compile.sh
   foo-bundle/configure.sh
   foo-bundle/opam-full-2.1.0-rc2.tar.gz
+  foo-bundle/patches/
   foo-bundle/repo/
   foo-bundle/repo/archives/
   foo-bundle/repo/archives/foo.1/
-  foo-bundle/repo/archives/foo.1/compile.tgz
+  foo-bundle/repo/archives/foo.1/compile.tar.gz
   foo-bundle/repo/archives/ocaml-base-compiler.4.14.0/
-  foo-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tgz
+  foo-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tar.gz
   foo-bundle/repo/cache/
   foo-bundle/repo/packages/
   foo-bundle/repo/packages/foo/
@@ -178,6 +179,7 @@ Bundle single package `foo`.
   foo-bundle/repo/packages/ocaml-bootstrap/ocaml-bootstrap.4.14.0/
   foo-bundle/repo/packages/ocaml-bootstrap/ocaml-bootstrap.4.14.0/opam
   foo-bundle/repo/repo
+  foo-bundle/uncompress.sh
   $ sh ./foo-bundle/compile.sh
   This bundle will compile the application to $TESTCASE_ROOT/foo-bundle, WITHOUT installing
   wrappers anywhere else.
@@ -266,14 +268,15 @@ Bundle package `bar` that depends on `foo`.
   bar-bundle/compile.sh
   bar-bundle/configure.sh
   bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/patches/
   bar-bundle/repo/
   bar-bundle/repo/archives/
   bar-bundle/repo/archives/bar.1/
-  bar-bundle/repo/archives/bar.1/compile.tgz
+  bar-bundle/repo/archives/bar.1/compile.tar.gz
   bar-bundle/repo/archives/foo.1/
-  bar-bundle/repo/archives/foo.1/compile.tgz
+  bar-bundle/repo/archives/foo.1/compile.tar.gz
   bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/
-  bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tgz
+  bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tar.gz
   bar-bundle/repo/cache/
   bar-bundle/repo/packages/
   bar-bundle/repo/packages/bar/
@@ -289,6 +292,7 @@ Bundle package `bar` that depends on `foo`.
   bar-bundle/repo/packages/ocaml-bootstrap/ocaml-bootstrap.4.14.0/
   bar-bundle/repo/packages/ocaml-bootstrap/ocaml-bootstrap.4.14.0/opam
   bar-bundle/repo/repo
+  bar-bundle/uncompress.sh
   $ sh ./bar-bundle/compile.sh ../BAR
   This bundle will compile the application to $TESTCASE_ROOT/bar-bundle, and put wrappers into
   ../BAR/bin. You will need to retain $TESTCASE_ROOT/bar-bundle for the wrappers to work.

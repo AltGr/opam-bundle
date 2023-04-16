@@ -46,7 +46,7 @@ else
    title "Bootstrap: compiling OCaml"
 
    echo "This may take a while. Output is in $LOG"
-   logged_cmd "Uncompressing" tar xzf repo/archives/ocaml-base-compiler."%{ocamlv}%"/*
+   "$(dirname "$0")/uncompress.sh"
    cd "ocaml-%{ocamlv}%"
    logged_cmd "Configuring" ./configure -prefix "$PREFIX"
    logged_cmd "Compiling" make world world.opt

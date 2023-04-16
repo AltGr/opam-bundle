@@ -10,8 +10,8 @@ Dummy executable
   > echo "I'm launching \$(basename \${0}) \$@!"
   > EOF
   $ chmod +x compile
-  $ tar czf compile.tgz compile
-  $ SHA=`openssl sha256 compile.tgz | cut -d ' ' -f 2`
+  $ tar czf compile.tar.gz compile
+  $ SHA=`openssl sha256 compile.tar.gz | cut -d ' ' -f 2`
 OCaml archive setup
   $ mkdir ocaml-4.14.0
   $ cat > ocaml-4.14.0/configure << EOF
@@ -37,8 +37,8 @@ OCaml archive setup
   > EOF
   $ cp ocaml-4.14.0/ocaml ocaml-4.14.0/ocamlc
   $ cp ocaml-4.14.0/ocaml ocaml-4.14.0/ocamlopt
-  $ tar czf ocaml.tgz ocaml-4.14.0
-  $ OCAMLSHA=`openssl sha256 ocaml.tgz | cut -d ' ' -f 2`
+  $ tar czf ocaml.tar.gz ocaml-4.14.0
+  $ OCAMLSHA=`openssl sha256 ocaml.tar.gz | cut -d ' ' -f 2`
 Repo setup
   $ mkdir -p REPO/packages/
   $ cat > REPO/repo << EOF
@@ -58,7 +58,7 @@ Repo setup
   >  "ocaml" {>= "4.12.0"}
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -76,7 +76,7 @@ Repo setup
   >  "ocaml" {>= "4.14.0"}
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -95,7 +95,7 @@ Repo setup
   >  "bar" { os != "cygwin" }
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -118,7 +118,7 @@ Ocaml.4.14.0 package.
   >   "ocaml-config"
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -132,7 +132,7 @@ Ocaml-base-compiler.4.14.0 package.
   >  [ "cp" "compile" "%{bin}%/ocaml" ]
   > ]
   > url {
-  >  src: "file://./ocaml.tgz"
+  >  src: "file://./ocaml.tar.gz"
   >  checksum: "sha256=$OCAMLSHA"
   > }
   > EOF
@@ -192,16 +192,17 @@ are available on linux os (`foo` not included).
   baz-bundle/compile.sh
   baz-bundle/configure.sh
   baz-bundle/opam-full-2.1.0-rc2.tar.gz
+  baz-bundle/patches/
   baz-bundle/repo/
   baz-bundle/repo/archives/
   baz-bundle/repo/archives/bar.1/
-  baz-bundle/repo/archives/bar.1/compile.tgz
+  baz-bundle/repo/archives/bar.1/compile.tar.gz
   baz-bundle/repo/archives/baz.1/
-  baz-bundle/repo/archives/baz.1/compile.tgz
+  baz-bundle/repo/archives/baz.1/compile.tar.gz
   baz-bundle/repo/archives/ocaml-base-compiler.4.14.0/
-  baz-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tgz
+  baz-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tar.gz
   baz-bundle/repo/archives/ocaml.4.14.0/
-  baz-bundle/repo/archives/ocaml.4.14.0/compile.tgz
+  baz-bundle/repo/archives/ocaml.4.14.0/compile.tar.gz
   baz-bundle/repo/cache/
   baz-bundle/repo/packages/
   baz-bundle/repo/packages/bar/
@@ -223,6 +224,7 @@ are available on linux os (`foo` not included).
   baz-bundle/repo/packages/ocaml/ocaml.4.14.0/
   baz-bundle/repo/packages/ocaml/ocaml.4.14.0/opam
   baz-bundle/repo/repo
+  baz-bundle/uncompress.sh
 
 Cleaning up
   $ rm -r baz-bundle baz-bundle.tar.gz
@@ -267,16 +269,17 @@ are available on cygwin os (`bar` not included).
   baz-bundle/compile.sh
   baz-bundle/configure.sh
   baz-bundle/opam-full-2.1.0-rc2.tar.gz
+  baz-bundle/patches/
   baz-bundle/repo/
   baz-bundle/repo/archives/
   baz-bundle/repo/archives/baz.1/
-  baz-bundle/repo/archives/baz.1/compile.tgz
+  baz-bundle/repo/archives/baz.1/compile.tar.gz
   baz-bundle/repo/archives/foo.1/
-  baz-bundle/repo/archives/foo.1/compile.tgz
+  baz-bundle/repo/archives/foo.1/compile.tar.gz
   baz-bundle/repo/archives/ocaml-base-compiler.4.14.0/
-  baz-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tgz
+  baz-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tar.gz
   baz-bundle/repo/archives/ocaml.4.14.0/
-  baz-bundle/repo/archives/ocaml.4.14.0/compile.tgz
+  baz-bundle/repo/archives/ocaml.4.14.0/compile.tar.gz
   baz-bundle/repo/cache/
   baz-bundle/repo/packages/
   baz-bundle/repo/packages/baz/
@@ -298,6 +301,7 @@ are available on cygwin os (`bar` not included).
   baz-bundle/repo/packages/ocaml/ocaml.4.14.0/
   baz-bundle/repo/packages/ocaml/ocaml.4.14.0/opam
   baz-bundle/repo/repo
+  baz-bundle/uncompress.sh
 
 Cleaning up
   $ rm -r baz-bundle baz-bundle.tar.gz
@@ -344,18 +348,19 @@ all dependencies.
   baz-bundle/compile.sh
   baz-bundle/configure.sh
   baz-bundle/opam-full-2.1.0-rc2.tar.gz
+  baz-bundle/patches/
   baz-bundle/repo/
   baz-bundle/repo/archives/
   baz-bundle/repo/archives/bar.1/
-  baz-bundle/repo/archives/bar.1/compile.tgz
+  baz-bundle/repo/archives/bar.1/compile.tar.gz
   baz-bundle/repo/archives/baz.1/
-  baz-bundle/repo/archives/baz.1/compile.tgz
+  baz-bundle/repo/archives/baz.1/compile.tar.gz
   baz-bundle/repo/archives/foo.1/
-  baz-bundle/repo/archives/foo.1/compile.tgz
+  baz-bundle/repo/archives/foo.1/compile.tar.gz
   baz-bundle/repo/archives/ocaml-base-compiler.4.14.0/
-  baz-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tgz
+  baz-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tar.gz
   baz-bundle/repo/archives/ocaml.4.14.0/
-  baz-bundle/repo/archives/ocaml.4.14.0/compile.tgz
+  baz-bundle/repo/archives/ocaml.4.14.0/compile.tar.gz
   baz-bundle/repo/cache/
   baz-bundle/repo/packages/
   baz-bundle/repo/packages/bar/
@@ -380,6 +385,7 @@ all dependencies.
   baz-bundle/repo/packages/ocaml/ocaml.4.14.0/
   baz-bundle/repo/packages/ocaml/ocaml.4.14.0/opam
   baz-bundle/repo/repo
+  baz-bundle/uncompress.sh
 
 Cleaning up
   $ rm -r baz-bundle baz-bundle.tar.gz

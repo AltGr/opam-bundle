@@ -9,8 +9,8 @@ Dummy executable
   > echo "I'm launching \$(basename \${0}) \$@!"
   > EOF
   $ chmod +x compile
-  $ tar czf compile.tgz compile
-  $ SHA=`openssl sha256 compile.tgz | cut -d ' ' -f 2`
+  $ tar czf compile.tar.gz compile
+  $ SHA=`openssl sha256 compile.tar.gz | cut -d ' ' -f 2`
 OCaml archives setup
 4.14
   $ mkdir ocaml-4.14.0
@@ -37,8 +37,8 @@ OCaml archives setup
   > EOF
   $ cp ocaml-4.14.0/ocaml ocaml-4.14.0/ocamlc
   $ cp ocaml-4.14.0/ocaml ocaml-4.14.0/ocamlopt
-  $ tar czf ocaml.4.14.tgz ocaml-4.14.0
-  $ OCAMLSHA414=`openssl sha256 ocaml.4.14.tgz | cut -d ' ' -f 2`
+  $ tar czf ocaml.4.14.tar.gz ocaml-4.14.0
+  $ OCAMLSHA414=`openssl sha256 ocaml.4.14.tar.gz | cut -d ' ' -f 2`
 4.13
   $ mkdir ocaml-4.13.0
   $ cat > ocaml-4.13.0/configure << EOF
@@ -64,8 +64,8 @@ OCaml archives setup
   > EOF
   $ cp ocaml-4.13.0/ocaml ocaml-4.13.0/ocamlc
   $ cp ocaml-4.13.0/ocaml ocaml-4.13.0/ocamlopt
-  $ tar czf ocaml.4.13.tgz ocaml-4.13.0
-  $ OCAMLSHA413=`openssl sha256 ocaml.4.13.tgz | cut -d ' ' -f 2`
+  $ tar czf ocaml.4.13.tar.gz ocaml-4.13.0
+  $ OCAMLSHA413=`openssl sha256 ocaml.4.13.tar.gz | cut -d ' ' -f 2`
 4.12
   $ mkdir ocaml-4.12.0
   $ cat > ocaml-4.12.0/configure << EOF
@@ -91,8 +91,8 @@ OCaml archives setup
   > EOF
   $ cp ocaml-4.12.0/ocaml ocaml-4.12.0/ocamlc
   $ cp ocaml-4.12.0/ocaml ocaml-4.12.0/ocamlopt
-  $ tar czf ocaml.4.12.tgz ocaml-4.12.0
-  $ OCAMLSHA412=`openssl sha256 ocaml.4.12.tgz | cut -d ' ' -f 2`
+  $ tar czf ocaml.4.12.tar.gz ocaml-4.12.0
+  $ OCAMLSHA412=`openssl sha256 ocaml.4.12.tar.gz | cut -d ' ' -f 2`
 Repos setup
   $ mkdir -p REPO1/packages/ REPO2/packages/ REPO3/packages/
   $ cat > REPO1/repo << EOF
@@ -118,7 +118,7 @@ Ocaml.4.14.0 package.
   >   "ocaml-config"
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -132,7 +132,7 @@ Ocaml-base-compiler.4.14.0 package.
   >  [ "cp" "compile" "%{bin}%/ocaml" ]
   > ]
   > url {
-  >  src: "file://./ocaml.4.14.tgz"
+  >  src: "file://./ocaml.4.14.tar.gz"
   >  checksum: "sha256=$OCAMLSHA414"
   > }
   > EOF
@@ -150,7 +150,7 @@ Ocaml.4.13.0 package.
   >   "ocaml-config"
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -164,7 +164,7 @@ Ocaml-base-compiler.4.13.0 package.
   >  [ "cp" "compile" "%{bin}%/ocaml" ]
   > ]
   > url {
-  >  src: "file://./ocaml.4.13.tgz"
+  >  src: "file://./ocaml.4.13.tar.gz"
   >  checksum: "sha256=$OCAMLSHA413"
   > }
   > EOF
@@ -182,7 +182,7 @@ Ocaml.4.12.0 package.
   >   "ocaml-config"
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -196,7 +196,7 @@ Ocaml-base-compiler.4.12.0 package.
   >  [ "cp" "compile" "%{bin}%/ocaml" ]
   > ]
   > url {
-  >  src: "file://./ocaml.4.12.tgz"
+  >  src: "file://./ocaml.4.12.tar.gz"
   >  checksum: "sha256=$OCAMLSHA412"
   > }
   > EOF
@@ -218,7 +218,7 @@ Ocaml-config.2 package.
   >  "ocaml" {>= "4.12.0"}
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -236,7 +236,7 @@ Ocaml-config.2 package.
   >  "foo"
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -356,7 +356,13 @@ Trying bundle foo package with a repository that hasn't required package (ocaml-
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
-  [ERROR] Package ocaml-config.2 not found in the repositories
+  
+  <><> Resolving package set ><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  [ERROR] No solution for foo & ocaml-bootstrap.4.14.0:   * Missing dependency:
+              - ocaml-config
+              unknown package
+  
+  
 
 
 

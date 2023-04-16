@@ -9,26 +9,26 @@ Different version of one dummy executable
   > echo "I'm launching \$(basename \${0}) \$@!"
   > EOF
   $ chmod +x compile
-  $ tar czf compile.tgz compile
-  $ SHA=`openssl sha256 compile.tgz | cut -d ' ' -f 2`
+  $ tar czf compile.tar.gz compile
+  $ SHA=`openssl sha256 compile.tar.gz | cut -d ' ' -f 2`
   $ cat > compile1 << EOF
   > echo "I'm launching \$(basename \${0}) v.1 \$@!"
   > EOF
   $ chmod +x compile1
-  $ tar czf compile1.tgz compile1
-  $ SHA1=`openssl sha256 compile1.tgz | cut -d ' ' -f 2`
+  $ tar czf compile1.tar.gz compile1
+  $ SHA1=`openssl sha256 compile1.tar.gz | cut -d ' ' -f 2`
   $ cat > compile2 << EOF
   > echo "I'm launching \$(basename \${0}) v.2 \$@!"
   > EOF
   $ chmod +x compile2
-  $ tar czf compile2.tgz compile2
-  $ SHA2=`openssl sha256 compile2.tgz | cut -d ' ' -f 2`
+  $ tar czf compile2.tar.gz compile2
+  $ SHA2=`openssl sha256 compile2.tar.gz | cut -d ' ' -f 2`
   $ cat > compile3 << EOF
   > echo "I'm launching \$(basename \${0}) v.3 \$@!"
   > EOF
   $ chmod +x compile3
-  $ tar czf compile3.tgz compile3
-  $ SHA3=`openssl sha256 compile3.tgz | cut -d ' ' -f 2`
+  $ tar czf compile3.tar.gz compile3
+  $ SHA3=`openssl sha256 compile3.tar.gz | cut -d ' ' -f 2`
   $ cat > compile4 << EOF
   > echo "I'm launching \$(basename \${0}) v.4 \$@!"
   > EOF
@@ -58,8 +58,8 @@ OCaml archive setup
   > EOF
   $ cp ocaml-4.14.0/ocaml ocaml-4.14.0/ocamlc
   $ cp ocaml-4.14.0/ocaml ocaml-4.14.0/ocamlopt
-  $ tar czf ocaml.tgz ocaml-4.14.0
-  $ OCAMLSHA=`openssl sha256 ocaml.tgz | cut -d ' ' -f 2`
+  $ tar czf ocaml.tar.gz ocaml-4.14.0
+  $ OCAMLSHA=`openssl sha256 ocaml.tar.gz | cut -d ' ' -f 2`
 Repo setup
   $ mkdir -p REPO/packages/
   $ cat > REPO/repo << EOF
@@ -104,7 +104,7 @@ Repository packages
   >  "ocaml" {>= "4.12.0"}
   > ]
   > url {
-  >  src: "file://./compile1.tgz"
+  >  src: "file://./compile1.tar.gz"
   >  checksum: "sha256=$SHA1"
   > }
   > EOF
@@ -119,7 +119,7 @@ Repository packages
   >  "ocaml" {>= "4.13.0"}
   > ]
   > url {
-  >  src: "file://./compile2.tgz"
+  >  src: "file://./compile2.tar.gz"
   >  checksum: "sha256=$SHA2"
   > }
   > EOF
@@ -134,7 +134,7 @@ Repository packages
   >  "ocaml" {>= "4.14.0"}
   > ]
   > url {
-  >  src: "file://./compile3.tgz"
+  >  src: "file://./compile3.tar.gz"
   >  checksum: "sha256=$SHA3"
   > }
   > EOF
@@ -152,7 +152,7 @@ Bar packages.
   >  "foo" {= "1"}
   > ]
   > url {
-  >  src: "file://./compile1.tgz"
+  >  src: "file://./compile1.tar.gz"
   >  checksum: "sha256=$SHA1"
   > }
   > EOF
@@ -168,7 +168,7 @@ Bar packages.
   >  "foo" {<= "2"}
   > ]
   > url {
-  >  src: "file://./compile2.tgz"
+  >  src: "file://./compile2.tar.gz"
   >  checksum: "sha256=$SHA2"
   > }
   > EOF
@@ -193,7 +193,7 @@ Bar packages.
   > ]
   > patches : ["test.patch"]
   > url {
-  >  src: "file://./compile3.tgz"
+  >  src: "file://./compile3.tar.gz"
   >  checksum: "sha256=$SHA3"
   > }
   > EOF
@@ -216,7 +216,7 @@ Ocaml.4.14.0 package.
   >   "ocaml-config"
   > ]
   > url {
-  >  src: "file://./compile.tgz"
+  >  src: "file://./compile.tar.gz"
   >  checksum: "sha256=$SHA"
   > }
   > EOF
@@ -230,7 +230,7 @@ Ocaml-base-compiler.4.14.0 package.
   >  [ "cp" "compile" "%{bin}%/ocaml" ]
   > ]
   > url {
-  >  src: "file://./ocaml.tgz"
+  >  src: "file://./ocaml.tar.gz"
   >  checksum: "sha256=$OCAMLSHA"
   > }
   > EOF
@@ -289,16 +289,17 @@ Bundle single package `bar` of version 2. That implies installation of its depen
   bar-bundle/compile.sh
   bar-bundle/configure.sh
   bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/patches/
   bar-bundle/repo/
   bar-bundle/repo/archives/
   bar-bundle/repo/archives/bar.2/
-  bar-bundle/repo/archives/bar.2/compile2.tgz
+  bar-bundle/repo/archives/bar.2/compile2.tar.gz
   bar-bundle/repo/archives/foo.2/
-  bar-bundle/repo/archives/foo.2/compile2.tgz
+  bar-bundle/repo/archives/foo.2/compile2.tar.gz
   bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/
-  bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tgz
+  bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tar.gz
   bar-bundle/repo/archives/ocaml.4.14.0/
-  bar-bundle/repo/archives/ocaml.4.14.0/compile.tgz
+  bar-bundle/repo/archives/ocaml.4.14.0/compile.tar.gz
   bar-bundle/repo/cache/
   bar-bundle/repo/packages/
   bar-bundle/repo/packages/bar/
@@ -320,6 +321,7 @@ Bundle single package `bar` of version 2. That implies installation of its depen
   bar-bundle/repo/packages/ocaml/ocaml.4.14.0/
   bar-bundle/repo/packages/ocaml/ocaml.4.14.0/opam
   bar-bundle/repo/repo
+  bar-bundle/uncompress.sh
 
   $ sh ./bar-bundle/compile.sh ../BAR
   This bundle will compile the application to $TESTCASE_ROOT/bar-bundle, and put wrappers into
@@ -415,16 +417,17 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
   bar-bundle/compile.sh
   bar-bundle/configure.sh
   bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/patches/
   bar-bundle/repo/
   bar-bundle/repo/archives/
   bar-bundle/repo/archives/bar.3/
-  bar-bundle/repo/archives/bar.3/compile3.tgz
+  bar-bundle/repo/archives/bar.3/compile3.tar.gz
   bar-bundle/repo/archives/foo.3/
-  bar-bundle/repo/archives/foo.3/compile3.tgz
+  bar-bundle/repo/archives/foo.3/compile3.tar.gz
   bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/
-  bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tgz
+  bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tar.gz
   bar-bundle/repo/archives/ocaml.4.14.0/
-  bar-bundle/repo/archives/ocaml.4.14.0/compile.tgz
+  bar-bundle/repo/archives/ocaml.4.14.0/compile.tar.gz
   bar-bundle/repo/cache/
   bar-bundle/repo/packages/
   bar-bundle/repo/packages/bar/
@@ -448,6 +451,7 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
   bar-bundle/repo/packages/ocaml/ocaml.4.14.0/
   bar-bundle/repo/packages/ocaml/ocaml.4.14.0/opam
   bar-bundle/repo/repo
+  bar-bundle/uncompress.sh
 
   $ sh ./bar-bundle/compile.sh ../BAR
   This bundle will compile the application to $TESTCASE_ROOT/bar-bundle, and put wrappers into
@@ -554,17 +558,18 @@ wrapper.
   bar-bundle/compile.sh
   bar-bundle/configure.sh
   bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/patches/
   bar-bundle/repo/
   bar-bundle/repo/archives/
   bar-bundle/repo/archives/bar.3/
-  bar-bundle/repo/archives/bar.3/compile3.tgz
+  bar-bundle/repo/archives/bar.3/compile3.tar.gz
   bar-bundle/repo/archives/foo.4/
   bar-bundle/repo/archives/foo.4/foo.4.tar.gz
   bar-bundle/repo/archives/foo.4/opam-bundle.0.4.tar.gz
   bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/
-  bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tgz
+  bar-bundle/repo/archives/ocaml-base-compiler.4.14.0/ocaml.tar.gz
   bar-bundle/repo/archives/ocaml.4.14.0/
-  bar-bundle/repo/archives/ocaml.4.14.0/compile.tgz
+  bar-bundle/repo/archives/ocaml.4.14.0/compile.tar.gz
   bar-bundle/repo/cache/
   bar-bundle/repo/packages/
   bar-bundle/repo/packages/bar/
@@ -588,6 +593,7 @@ wrapper.
   bar-bundle/repo/packages/ocaml/ocaml.4.14.0/
   bar-bundle/repo/packages/ocaml/ocaml.4.14.0/opam
   bar-bundle/repo/repo
+  bar-bundle/uncompress.sh
 
   $ sh ./bar-bundle/compile.sh ../BAR
   This bundle will compile the application to $TESTCASE_ROOT/bar-bundle, and put wrappers into
