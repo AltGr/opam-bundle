@@ -88,7 +88,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   in
   let opamv = match opamv with
     | Some v -> v
-    | None -> OpamPackage.Version.of_string "2.1.0~rc2"
+    | None -> OpamPackage.Version.of_string "2.1.4"
   in
   let output = match output, packages with
     | Some f, _ ->
@@ -810,7 +810,13 @@ open Cmdliner
 
 let pkg_version_conv =
   Arg.conv ~docv:"VERSION" (
-    (fun s -> try Ok (OpamPackage.Version.of_string s) with Failure s ->
+    (fun s ->
+      let s = match s with
+      | "2.0" -> "2.0.10"
+      | "2.1" -> "2.1.4"
+      | _ -> s
+      in
+      try Ok (OpamPackage.Version.of_string s) with Failure s ->
         Error (`Msg s)),
     (fun ppf v -> Format.pp_print_string ppf (OpamPackage.Version.to_string v))
   )
