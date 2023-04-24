@@ -15,15 +15,13 @@ open OpamProcess.Job.Op
 
 let bootstrap_packages ocamlv = [
   OpamPackage.Name.of_string "ocaml-base-compiler", Some (`Eq, ocamlv);
-  OpamPackage.Name.of_string "opam-depext",
-  Some (`Geq, OpamPackage.Version.of_string "1.1.0");
 ]
 
 let system_ocaml_package_name = OpamPackage.Name.of_string "ocaml-system"
 
 let wrapper_ocaml_package_name = OpamPackage.Name.of_string "ocaml"
 
-let ocaml_config_package = OpamPackage.of_string "ocaml-config.1"
+let ocaml_config_package = OpamPackage.of_string "ocaml-config.2"
 
 (* This package will be created solely for the bundle, and replaces
    ocaml-system *)
@@ -65,11 +63,13 @@ let opam_archive_url opamv =
 
 let output_extension = "tar.gz"
 
+let stdlib_output = output
+
 let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     packages_targets =
   OpamClientConfig.opam_init
     ~debug_level:(if debug then 1 else 0)
-    ~answer:(if yes then Some true else None)
+    ~yes:(if yes then Some true else None)
     ();
   let packages = List.map fst packages_targets in
   let ocamlv = match ocamlv with
@@ -87,7 +87,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   in
   let opamv = match opamv with
     | Some v -> v
-    | None -> OpamPackage.Version.of_string "2.0.0~rc2"
+    | None -> OpamPackage.Version.of_string "2.1.0~rc2"
   in
   let output = match output, packages with
     | Some f, _ ->
@@ -153,7 +153,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   OpamFilename.with_tmp_dir @@ fun tmp ->
   let opam_root = OpamFilename.Op.(tmp / "root") in
   OpamStateConfig.update ~root_dir:opam_root ();
-  let repos_dir = OpamFilename.Op.(tmp / "repos") in
+  (* let repos_dir = OpamFilename.Op.(tmp / "repos") in *)
   (* *** *)
   OpamConsole.header_msg "Initialising repositories";
   let gen_repo_name repos_map base =
@@ -176,8 +176,6 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
           | [] -> gen_repo_name repos_map "repository"
         in
         let repo = {
-          repo_root =
-            OpamFilename.Op.(repos_dir / OpamRepositoryName.to_string name);
           repo_name = name;
           repo_url = url;
           repo_trust = None;
@@ -210,10 +208,11 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     repos_definitions =
       OpamRepositoryName.Map.map (fun r ->
           OpamFile.Repo.safe_read
-            OpamRepositoryPath.(repo (create gt.root r.repo_name)) |>
+            OpamRepositoryPath.(repo (root gt.root r.repo_name)) |>
           OpamFile.Repo.with_root_url r.repo_url)
         repos_map;
     repo_opams = OpamRepositoryName.Map.empty;
+    repos_tmp = Hashtbl.create 1;
   } in
   let failed_repos, rt =
     OpamRepositoryCommand.update_with_auto_upgrade rt
@@ -544,7 +543,6 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   OpamFilename.mkdir target_links;
   let repo_file =
     OpamFile.Repo.create
-      ~opam_version:OpamVersion.current_nopatch
       ~dl_cache:[cache_dirname]
       ()
   in
@@ -554,7 +552,9 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   in
   OpamPackage.Set.iter (fun nv ->
       let opam = OpamSwitchState.opam st nv in
-      let orig_dir = match OpamFile.OPAM.metadata_dir opam with
+      let orig_dir =
+        match OpamFile.OPAM.get_metadata_dir
+              ~repos_roots:(OpamRepositoryPath.root gt.root) opam with
         | Some dir -> dir
         | None -> assert false
       in
@@ -620,7 +620,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
               OpamConsole.error_and_exit `Sync_error
                 "%s could not be obtained%s"
                 source_string (OpamStd.Option.to_string (fun s -> ": "^s) msg)
-            | Result () | Up_to_date () ->
+            | Result (_) | Up_to_date (_) ->
               link ?extra urlf dst;
               urlf)
     in
@@ -748,7 +748,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     let buf = Bytes.create sz in
     let rec copy () =
       let len = input ic buf 0 sz in
-      if len <> 0 then (Pervasives.output oc buf 0 len; copy ())
+      if len <> 0 then (stdlib_output oc buf 0 len; copy ())
     in
     copy ();
     close_in ic;
