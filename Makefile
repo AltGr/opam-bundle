@@ -1,24 +1,13 @@
-all: opam-bundle opam-bundle.1 opam-bundle.install
+all: build
 
-opam-bundle: src/opamBundleScripts.ml src/opamBundleMain.ml
-	ocamlfind ocamlopt -package cmdliner,opam-repository,opam-client -linkpkg -w A-4-44 -I src $^ -o $@
+build:
+	dune build
+	cp _build/install/default/bin/opam-bundle .
 
-opam-bundle.1: opam-bundle
-	./$< --help=groff >$@
-
-opam-bundle.install:
-	echo 'bin: "opam-bundle"' > $@
-	echo 'man: "opam-bundle.1"' >>$@
-
-src/opamBundleScripts.ml: shell/common.sh shell/bootstrap.sh shell/configure.sh shell/compile.sh shell/self_extract.sh
-	ocaml crunch.ml $^ > $@
-
-.PHONY:clean distclean install
+.PHONY: clean
 clean:
-	rm -f src/opamBundleScripts.ml src/*.cm* src/*.o src/*.*a src/*.lib
+	dune clean
 
 distclean: clean
-	rm -f *.install opam-bundle opam-bundle.1
-
-install: opam-bundle.install opam-bundle opam-bundle.1
-	opam-installer opam $<
+	rm -rf _build
+	rm opam-bundle

@@ -1,0 +1,11 @@
+(rule
+ (target opam-bundle.1)
+ (deps %{bin:opam-bundle})
+ (action
+  (with-stdout-to %{target}
+   (run %{deps} --help=groff))))
+
+(install
+ (section man)
+ (files opam-bundle.1)
+ (package opam-bundle))
