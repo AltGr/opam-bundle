@@ -64,7 +64,7 @@ EOF
 chmod +x ${PREFIX}/bin/sudo
 
 R=0
-logged_cmd "Compiling packages" opam install --confirm=unsafe-yes %{install_packages}% %{doc?--with-doc:}% %{test?--with-test:}% || R=$?
+logged_cmd "Compiling packages" opam install --yes %{install_packages}% %{doc?--with-doc:}% %{test?--with-test:}% || R=$?
 
 rm -f ${PREFIX}/bin/sudo
 
