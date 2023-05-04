@@ -21,7 +21,7 @@ let system_ocaml_package_name = OpamPackage.Name.of_string "ocaml-system"
 
 let wrapper_ocaml_package_name = OpamPackage.Name.of_string "ocaml"
 
-let ocaml_config_package = OpamPackage.of_string "ocaml-config.2"
+let ocaml_config_package_name = OpamPackage.Name.of_string "ocaml-config"
 
 (* This package will be created solely for the bundle, and replaces
    ocaml-system *)
@@ -224,15 +224,16 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       (OpamStd.List.to_string OpamRepositoryName.to_string failed_repos);
   (* *** Custom packages *)
   let custom_opams =
+    let index = OpamRepositoryState.build_index rt repos_list in
     (* Renaming ocaml-system to ocaml-bootstrap avoids confusion from other
        packages *)
     let find_def nv =
-      match OpamRepositoryState.find_package_opt rt repos_list nv with
+      match OpamPackage.Map.find_opt nv index with
       | None ->
         OpamConsole.error_and_exit `Not_found
           "Package %s not found in the repositories"
           (OpamPackage.to_string nv)
-      | Some (_, opam) -> opam
+      | Some opam -> opam
     in
     let bootstrap_ocaml_opam =
       find_def (OpamPackage.create system_ocaml_package_name ocamlv) |>
@@ -249,8 +250,13 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
             (OpamFile.OPAM.depends opam))
         opam
     in
-    let ocaml_config_opam =
-      find_def ocaml_config_package |> fix_compiler_depends
+    let ocaml_config_packages =
+      OpamPackage.Map.filter (function
+        | package when OpamPackage.Name.equal ocaml_config_package_name
+        @@ OpamPackage.name package ->
+          fun _ -> true
+        | _  -> fun _ -> false) index |>
+      OpamPackage.Map.map fix_compiler_depends
     in
     let wrapper_package =
       OpamPackage.create wrapper_ocaml_package_name ocamlv
@@ -258,9 +264,10 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     let wrapper_ocaml_opam =
       find_def wrapper_package |> fix_compiler_depends
     in
-    OpamPackage.Map.of_list [
+    OpamPackage.Map.union (fun a _ -> a)
+    ocaml_config_packages
+    @@ OpamPackage.Map.of_list [
       bootstrap_ocaml_package ocamlv, bootstrap_ocaml_opam;
-      ocaml_config_package, ocaml_config_opam;
       wrapper_package, wrapper_ocaml_opam;
     ]
   in
