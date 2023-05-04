@@ -7,8 +7,6 @@ Repo initial setup with three packages `foo`, `bar`, and `baz`, with specific av
   $ export OPAMROOT=$PWD/OPAMROOT
   $ export OPAMSTATUSLINE=never
   $ export OPAMVERBOSE=-1
-  $ opam --version
-  2.1.4
 Stub executable
   $ cat > compile << EOF
   > #!/bin/sh

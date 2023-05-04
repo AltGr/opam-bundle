@@ -5,8 +5,6 @@ This test verify bundling of real package `odoc` with compiler version 4.02.3 an
   $ export OPAMROOT=$PWD/OPAMROOT
   $ export OPAMSTATUSLINE=never
   $ export OPAMVERBOSE=-1
-  $ opam --version
-  2.1.4
   $ opam-bundle odoc --ocaml=4.02.3 --opam=2.0 --self --yes 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
   OCaml version is set to 4.02.3.
   Opam version is set to 2.0.10.
@@ -58,13 +56,62 @@ This test verify bundling of real package `odoc` with compiler version 4.02.3 an
   <><> Getting all archives <><><><><><><><><><><><><><><><><><><><><><><><><><><>
   
   <><> Getting bootstrap packages <><><><><><><><><><><><><><><><><><><><><><><><>
-  [ERROR] Opam archive at https://github.com/ocaml/opam/releases/download/2.0/opam-full-2.0.tar.gz could not be obtained: curl error code 404
+  
+  <><> Building bundle ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  Done. Bundle generated as $TESTCASE_ROOT/odoc-bundle.tar.gz
+  Self-extracting archive generated as $TESTCASE_ROOT/odoc-bundle.sh
   $ sh ./odoc-bundle.sh -y
-  sh: 0: cannot open ./odoc-bundle.sh: No such file
+  This bundle will compile the application to $TESTCASE_ROOT/odoc-bundle, WITHOUT installing
+  wrappers anywhere else.
+  
+  ================ Bootstrap: checking for prerequisites         ================
+  
+  Checking for cc... found
+  Checking for make... found
+  Checking for wget curl... found
+  Checking for patch... found
+  Checking for unzip... found
+  Checking for bunzip2... found
+  Checking for rsync... found
+  
+  ================ Bootstrap: compiling OCaml                    ================
+  
+  This may take a while. Output is in $TESTCASE_ROOT/odoc-bundle/bootstrap.log
+  Uncompressing... 
+  
+  Something went wrong, see log in $TESTCASE_ROOT/odoc-bundle/bootstrap.log
   [2]
   $ sh ./odoc-bundle/compile.sh ../ODOC
-  sh: 0: cannot open ./odoc-bundle/compile.sh: No such file
-  [2]
+  This bundle will compile the application to $TESTCASE_ROOT/odoc-bundle, and put wrappers into
+  ../ODOC/bin. You will need to retain $TESTCASE_ROOT/odoc-bundle for the wrappers to work.
+  
+  Press enter to continue... 
+  ================ Bootstrap: checking for prerequisites         ================
+  
+  Checking for cc... found
+  Checking for make... found
+  Checking for wget curl... found
+  Checking for patch... found
+  Checking for unzip... found
+  Checking for bunzip2... found
+  Checking for rsync... found
+  
+  ================ Bootstrap: compiling OCaml                    ================
+  
+  This may take a while. Output is in $TESTCASE_ROOT/odoc-bundle/bootstrap.log
+  Uncompressing... 
+  
+  Something went wrong, see log in $TESTCASE_ROOT/odoc-bundle/bootstrap.log
+  
+  ================ Compile: installing packages                  ================
+  
+  Output is in $TESTCASE_ROOT/odoc-bundle/compile.log
+  ./odoc-bundle/compile.sh: 59: cannot create $TESTCASE_ROOT/odoc-bundle/bootstrap/bin/sudo: Directory nonexistent
+  chmod: cannot access '$TESTCASE_ROOT/odoc-bundle/bootstrap/bin/sudo': No such file or directory
+  Compiling packages... 
+  
+  Something went wrong, see log in $TESTCASE_ROOT/odoc-bundle/compile.log
+  [50]
   $ ODOC/bin/odoc
   ODOC/bin/odoc: not found
   [127]

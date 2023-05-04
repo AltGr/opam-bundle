@@ -5,8 +5,6 @@ This test verify bundling of real package `opam-bundle` of version 0.4.
   $ export OPAMROOT=$PWD/OPAMROOT
   $ export OPAMSTATUSLINE=never
   $ export OPAMVERBOSE=-1
-  $ opam --version
-  2.1.4
   $ opam-bundle "opam-bundle@https://github.com/AltGr/opam-bundle/archive/refs/tags/0.4.tar.gz" opam-client.2.0.10 --self --opam=2.1 --ocaml=4.14.0 --yes 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
   OCaml version is set to 4.14.0.
   Opam version is set to 2.1.4.

@@ -8,8 +8,6 @@ Repo initial setup with two packages `foo` and `bar` that depends on `foo` and o
   $ export OPAMROOT=$PWD/OPAMROOT
   $ export OPAMSTATUSLINE=never
   $ export OPAMVERBOSE=-1
-  $ opam --version
-  2.1.4
   $ cat > compile << EOF
   > #!/bin/sh
   > echo "I'm launching \$(basename \${0}) \$@!"

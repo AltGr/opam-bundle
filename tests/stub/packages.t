@@ -6,8 +6,6 @@ Every package used is a stub package.
   $ export OPAMROOT=$PWD/OPAMROOT
   $ export OPAMSTATUSLINE=never
   $ export OPAMVERBOSE=-1
-  $ opam --version
-  2.1.4
 Different version of one stub executable
   $ cat > compile << EOF
   > #!/bin/sh
@@ -555,7 +553,7 @@ wrapper.
   
   <><> Getting all archives <><><><><><><><><><><><><><><><><><><><><><><><><><><>
   [WARNING] Extra source repo of foo.4 from file://./REPO/repo had no recorded checksum: adding md5=$HASH
-
+  
   <><> Getting bootstrap packages <><><><><><><><><><><><><><><><><><><><><><><><>
   
   <><> Building bundle ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -567,7 +565,7 @@ wrapper.
   bar-bundle/common.sh
   bar-bundle/compile.sh
   bar-bundle/configure.sh
-  bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/opam-full-2.1.4.tar.gz
   bar-bundle/repo/
   bar-bundle/repo/archives/
   bar-bundle/repo/archives/bar.3/
