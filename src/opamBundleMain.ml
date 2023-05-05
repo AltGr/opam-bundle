@@ -12,9 +12,10 @@ open OpamTypes
 open OpamStateTypes
 open OpamProcess.Job.Op
 
+let ocaml_base_compiler_package_name = OpamPackage.Name.of_string "ocaml-base-compiler"
 
 let bootstrap_packages ocamlv = [
-  OpamPackage.Name.of_string "ocaml-base-compiler", Some (`Eq, ocamlv);
+  ocaml_base_compiler_package_name, Some (`Eq, ocamlv);
 ]
 
 let system_ocaml_package_name = OpamPackage.Name.of_string "ocaml-system"
@@ -568,6 +569,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   (* *** *)
   OpamConsole.header_msg "Getting all archives";
   let bundle_dir = OpamFilename.Op.(tmp / bundle_name) in
+  let compiler_patches_dir = OpamFilename.Op.(bundle_dir / "patches") in
   let target_repo = OpamFilename.Op.(bundle_dir / "repo") in
   let cache_dirname = "cache" in
   let target_cache = OpamFilename.Op.(target_repo / cache_dirname) in
@@ -687,6 +689,33 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       (OpamFile.OPAM.extra_sources opam)
     @@| fun extra_sources ->
     let opam = OpamFile.OPAM.with_extra_sources extra_sources opam in
+    (* checking compiler patches *)
+    if OpamPackage.Name.equal (OpamPackage.name nv) ocaml_base_compiler_package_name
+    then begin
+      let extra_sources = OpamFile.OPAM.extra_sources opam in
+      let extra_files = OpamStd.Option.default [] @@ OpamFile.OPAM.extra_files opam in
+      let patches = List.map fst @@ OpamFile.OPAM.patches opam in
+      if patches <> [] then OpamFilename.mkdir compiler_patches_dir;
+      List.iteri (fun i basename ->
+        let src =
+          match List.find_opt (fun (name,_) -> name = basename) extra_sources with
+          | Some (_, url) -> (* extra-sources *)
+            let hash = List.hd @@ OpamFile.URL.checksum url in
+            OpamRepository.cache_file target_cache hash
+          | None ->
+            (match  List.find_opt (fun (name,_) -> name = basename) extra_files with
+              | Some _ -> (* extra-files *)
+                OpamFilename.Op.(target_dest OpamRepositoryPath.files nv
+                                // OpamFilename.Base.to_string basename)
+              | None ->
+                OpamConsole.error_and_exit `Not_found
+                  "Patch %s is not found in extra-files or extra-sources."
+                  (OpamFilename.Base.to_string basename))
+        in
+          let name = Format.sprintf "patch%d.patch" i in
+          OpamFilename.copy ~src ~dst:OpamFilename.Op.(compiler_patches_dir // name))
+        patches
+    end;
     if opam <> opam0 then
       OpamFile.OPAM.write_with_preserved_format
         (target_dest OpamRepositoryPath.opam nv) opam
@@ -723,7 +752,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   (* *** *)
   OpamConsole.header_msg "Building bundle";
   let include_scripts =
-    ["common.sh"; "bootstrap.sh"; "configure.sh"; "compile.sh"]
+    ["common.sh"; "bootstrap.sh"; "configure.sh"; "compile.sh"; ]
   in
   let scripts =
     let env v = match OpamVariable.Full.to_string v with
