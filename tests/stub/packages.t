@@ -6,8 +6,6 @@ Every package used is a stub package.
   $ export OPAMROOT=$PWD/OPAMROOT
   $ export OPAMSTATUSLINE=never
   $ export OPAMVERBOSE=-1
-  $ opam --version
-  2.1.4
 Different version of one stub executable
   $ cat > compile << EOF
   > #!/bin/sh
@@ -262,6 +260,8 @@ Running opam-bundle with sanitized output that contains replaced platform specif
 Bundle single package `bar` of version 2. That implies installation of its dependency `foo` with constraint "<=2".
 
   $ opam-bundle bar.2 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.14.0.
+  No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -296,7 +296,7 @@ Bundle single package `bar` of version 2. That implies installation of its depen
   bar-bundle/common.sh
   bar-bundle/compile.sh
   bar-bundle/configure.sh
-  bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/opam-full-2.1.4.tar.gz
   bar-bundle/repo/
   bar-bundle/repo/archives/
   bar-bundle/repo/archives/bar.2/
@@ -388,6 +388,8 @@ Bundle two packages `bar` and `foo>2`. Forcing constraint on `foo` implies insta
 Since `foo` was specified as argument to `opam-bundle` it installs additionally `foo` wrapper.
 
   $ opam-bundle bar 'foo>2' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.14.0.
+  No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -422,7 +424,7 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
   bar-bundle/common.sh
   bar-bundle/compile.sh
   bar-bundle/configure.sh
-  bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/opam-full-2.1.4.tar.gz
   bar-bundle/repo/
   bar-bundle/repo/archives/
   bar-bundle/repo/archives/bar.3/
@@ -521,7 +523,9 @@ has extra-source (opam-bundle archive 0.4) that should be also bundled. Forcing 
 installation of `bar.3`. Since `foo` was specified as argument to `opam-bundle` it installs additionally `foo`
 wrapper.
 
-  $ opam-bundle bar 'foo@foo.4' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/;s/md5=.*/md5=$HASH/'
+  $ opam-bundle bar 'foo@foo.4' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/;s/md5=.*/md5=$HASH/' | sed 's/.* No such file or directory/mv error/g'
+  OCaml version is set to 4.14.0.
+  No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -561,7 +565,7 @@ wrapper.
   bar-bundle/common.sh
   bar-bundle/compile.sh
   bar-bundle/configure.sh
-  bar-bundle/opam-full-2.1.0-rc2.tar.gz
+  bar-bundle/opam-full-2.1.4.tar.gz
   bar-bundle/repo/
   bar-bundle/repo/archives/
   bar-bundle/repo/archives/bar.3/
@@ -657,6 +661,8 @@ wrapper.
 Trying to bundle two packages `bar.3` and `foo.1`. This should fail, because those versions are not compatible.
 
   $ opam-bundle bar.3 foo.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.14.0.
+  No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS

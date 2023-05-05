@@ -73,7 +73,10 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     ();
   let packages = List.map fst packages_targets in
   let ocamlv = match ocamlv with
-    | Some v -> v
+    | Some v ->
+      OpamConsole.formatted_msg "OCaml version is set to %s.\n"
+        (OpamConsole.colorise `bold @@ OpamPackage.Version.to_string v);
+      v
     | None ->
       let v =
         try
@@ -85,9 +88,22 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
         (OpamConsole.colorise `bold @@ OpamPackage.Version.to_string v);
       v
   in
-  let opamv = match opamv with
-    | Some v -> v
-    | None -> OpamPackage.Version.of_string "2.1.0~rc2"
+  let opamv =
+    match Option.map OpamPackage.Version.to_string opamv with
+    | Some v ->
+      let v = match v with
+      | "2.0" -> "2.0.10"
+      | "2.1" -> "2.1.4"
+      | _ -> v
+      in
+      OpamConsole.formatted_msg "Opam version is set to %s.\n"
+        (OpamConsole.colorise `bold v);
+      OpamPackage.Version.of_string v
+    | None ->
+      let default = "2.1.4" in
+      OpamConsole.formatted_msg "No opam version selected, will use %s.\n"
+        (OpamConsole.colorise `bold default);
+      OpamPackage.Version.of_string default
   in
   let output = match output, packages with
     | Some f, _ ->
@@ -784,7 +800,8 @@ open Cmdliner
 
 let pkg_version_conv =
   Arg.conv ~docv:"VERSION" (
-    (fun s -> try Ok (OpamPackage.Version.of_string s) with Failure s ->
+    (fun s ->
+      try Ok (OpamPackage.Version.of_string s) with Failure s ->
         Error (`Msg s)),
     (fun ppf v -> Format.pp_print_string ppf (OpamPackage.Version.to_string v))
   )
