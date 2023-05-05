@@ -742,8 +742,8 @@ Trying to bundle `foo@foo.4` with incompatible OCaml package version. This shoul
   [NOTE] Will use package definition found in source for foo
   
   <><> Resolving package set ><><><><><><><><><><><><><><><><><><><><><><><><><><>
-  [ERROR] No solution for bar & foo & ocaml-bootstrap.4.13.0:   * Missing dependency:
-              - bar -> ocaml >= 4.14.0
+  [ERROR] No solution for bar & foo.4 & ocaml-bootstrap.4.13.0:   * Missing dependency:
+              - foo >= 4 -> ocaml >= 4.14.0
               no matching version
   
   

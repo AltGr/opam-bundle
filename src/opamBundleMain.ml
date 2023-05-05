@@ -189,18 +189,6 @@ let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
       env
       (OpamVariable.Map.of_list (hardcoded_env ocamlv opamv))
   in
-  let packages_filter =
-    let module L = OpamListCommand in
-    OpamFormula.ands [
-      Atom L.Available;
-      OpamFormula.ors [
-        Atom (L.Solution (L.default_dependency_toggles,
-                          bootstrap_packages ocamlv));
-        Atom (L.Solution ({L.default_dependency_toggles with L.test; doc},
-                          packages @ additional_user_packages ocamlv));
-      ]
-    ]
-  in
   OpamFilename.with_tmp_dir @@ fun tmp ->
   let opam_root = tmp / "root" in
   OpamStateConfig.update ~root_dir:opam_root ();
@@ -476,6 +464,18 @@ let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
         try (name, (Some (`Eq, (OpamPackage.package_of_name pins name).version)))
         with Not_found -> at)
       packages
+  in
+  let packages_filter =
+    let module L = OpamListCommand in
+    OpamFormula.ands [
+      Atom L.Available;
+      OpamFormula.ors [
+        Atom (L.Solution (L.default_dependency_toggles,
+                          bootstrap_packages ocamlv));
+        Atom (L.Solution ({L.default_dependency_toggles with L.test; doc},
+                          packages @ additional_user_packages ocamlv));
+      ]
+    ]
   in
   (* *** *)
   OpamConsole.header_msg "Resolving package set";
