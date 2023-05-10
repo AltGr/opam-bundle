@@ -208,6 +208,11 @@ Ocaml-system.4.14.0 package.
   $ cat > REPO/packages/ocaml-system/ocaml-system.4.14.0/opam << EOF
   > opam-version: "2.0"
   > EOF
+Ocaml-system.4.13.0 package.
+  $ mkdir -p REPO/packages/ocaml-system/ocaml-system.4.13.0
+  $ cat > REPO/packages/ocaml-system/ocaml-system.4.13.0/opam << EOF
+  > opam-version: "2.0"
+  > EOF
 Ocaml-config.2 package.
   $ mkdir -p REPO/packages/ocaml-config/ocaml-config.2
   $ cat > REPO/packages/ocaml-config/ocaml-config.2/opam << EOF
@@ -226,9 +231,36 @@ Ocaml.4.14.0 package.
   >  checksum: "sha256=$SHA"
   > }
   > EOF
+Ocaml.4.13.0 package.
+  $ mkdir -p REPO/packages/ocaml/ocaml.4.13.0
+  $ cat > REPO/packages/ocaml/ocaml.4.13.0/opam << EOF
+  > opam-version: "2.0"
+  > depends: [
+  >   ("ocaml-system" | "ocaml-base-compiler")
+  >   "ocaml-config"
+  > ]
+  > url {
+  >  src: "file://./compile.tar.gz"
+  >  checksum: "sha256=$SHA"
+  > }
+  > EOF
 Ocaml-base-compiler.4.14.0 package.
   $ mkdir -p REPO/packages/ocaml-base-compiler/ocaml-base-compiler.4.14.0
   $ cat > REPO/packages/ocaml-base-compiler/ocaml-base-compiler.4.14.0/opam << EOF
+  > opam-version: "2.0"
+  > build: [ "sh" "compile" name ]
+  > install: [
+  >  [ "chmod" "+x" "compile" ]
+  >  [ "cp" "compile" "%{bin}%/ocaml" ]
+  > ]
+  > url {
+  >  src: "file://./ocaml.tar.gz"
+  >  checksum: "sha256=$OCAMLSHA"
+  > }
+  > EOF
+Ocaml-base-compiler.4.13.0 package.
+  $ mkdir -p REPO/packages/ocaml-base-compiler/ocaml-base-compiler.4.13.0
+  $ cat > REPO/packages/ocaml-base-compiler/ocaml-base-compiler.4.13.0/opam << EOF
   > opam-version: "2.0"
   > build: [ "sh" "compile" name ]
   > install: [
@@ -692,3 +724,34 @@ Trying to bundle two packages `bar` and `foo<3@foo.4`. This should fail, because
                specified together with a target URL
   Usage: opam-bundle [OPTION]… PACKAGE…
   Try 'opam-bundle --help' for more information.
+
+
+
+
+============================== Test 6 (fail) ==============================
+
+
+Trying to bundle `foo@foo.4` with incompatible OCaml package version. This should fail and show message that there are no solution for given package set.
+
+  $ opam-bundle bar 'foo@foo.4' --repository ./REPO --ocaml=4.13.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.13.0.
+  No opam version selected, will use 2.1.4.
+  No environment specified, will use the following for package resolution (based on the host system):
+    - arch = $ARCH
+    - os = $OS
+    - os-distribution = $OSDISTRIB
+    - os-version = $OSVERSION
+    - os-family = $OSFAMILLY
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  
+  <><> Getting external packages ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [NOTE] Will use package definition found in source for foo
+  
+  <><> Resolving package set ><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  [ERROR] No solution for bar & foo.4 & ocaml-bootstrap.4.13.0:   * Missing dependency:
+              - ocaml >= 4.14.0
+              no matching version
+  
+  
