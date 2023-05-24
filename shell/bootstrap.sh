@@ -72,7 +72,7 @@ else
    echo "This may take a while. Output is in $LOG"
    logged_cmd "Uncompressing" tar xzf "%{opam_archive}%"
    cd $(basename "%{opam_archive}%" .tar.gz)
-   logged_cmd "Configuring" ./configure --prefix "$PREFIX"
+   logged_cmd "Configuring" ./configure --with-mccs --prefix "$PREFIX"
    logged_cmd "Compiling extra dependencies" make lib-ext
    logged_cmd "Compiling" make
    logged_cmd "Installing to temp prefix" make install
