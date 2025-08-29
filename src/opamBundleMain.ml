@@ -230,6 +230,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       |> OpamFile.Config.with_repositories repos_list
       |> OpamFile.Config.with_dl_cache dl_cache;
     global_variables = env;
+    global_state_to_upgrade = { gtc_repo = false; gtc_switch = false };
   } in
   let rt = {
     repos_global = (gt :> unlocked global_state);
@@ -340,7 +341,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       in
       let nv, opam =
         match OpamPinned.find_opam_file_in_source name src with
-        | Some f ->
+        | Some (f, _) ->
           OpamConsole.note
             "Will use package definition found in source for %s"
             (OpamPackage.Name.to_string name);

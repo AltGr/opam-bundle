@@ -372,7 +372,7 @@ Trying bundle foo package with a repository that hasn't required package (ocaml-
   
   <><> Resolving package set ><><><><><><><><><><><><><><><><><><><><><><><><><><>
   [ERROR] No solution for foo & ocaml-bootstrap.4.14.0:   * Missing dependency:
-              - ocaml-config
+              - foo -> ocaml -> ocaml-config
               unknown package
   
   
