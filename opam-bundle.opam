@@ -12,7 +12,7 @@ depends: [
   "ocamlfind" {build}
   "dune" {build & >= "2.8.5"}
   "cmdliner" {build & >= "1.1.0"}
-  "opam-client" {build & >= "2.1" & < "2.2"}
+  "opam-client" {build & >= "2.4" & < "2.5"}
 ]
 build: [ "dune" "build" "-j" jobs "-p" name "@runtest" {with-test} ]
 dev-repo: "git+https://github.com/AltGr/opam-bundle"
