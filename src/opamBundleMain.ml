@@ -54,7 +54,7 @@ let exclude_packages ocamlv = [
 
 let opam_archive_url opamv =
   let tag =
-    OpamStd.String.map (function '~' -> '-' | c -> c)
+    Stdlib.String.map (function '~' -> '-' | c -> c)
       (OpamPackage.Version.to_string opamv)
   in
   Printf.sprintf
@@ -99,19 +99,6 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       in
       OpamConsole.formatted_msg "Opam version is set to %s.\n"
         (OpamConsole.colorise `bold v);
-      begin
-        let components = String.split_on_char '.' v in
-        match components with
-        | [major; minor]
-        | [major; minor; _] ->
-          if major >= "2" || (major == "2" && minor >= "2") then
-            OpamConsole.error_and_exit `Bad_arguments
-              "Unsupported version number, greater than 2.1.x; \
-               bootstrap script will fail when compiling solver: %s" v
-        | _ ->
-          OpamConsole.error_and_exit `Bad_arguments
-            "Invalid version number (missing/too many dots): %s" v
-      end;
       OpamPackage.Version.of_string v
     | None ->
       let default = "2.1.4" in
@@ -321,7 +308,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     let srcs = OpamFilename.Op.(tmp / "sources") in
     OpamConsole.header_msg "Getting external packages";
     let pkgs_urls =
-      OpamStd.List.filter_map (function
+      Stdlib.List.filter_map (function
           | _, None -> None
           | (name, None), Some target -> Some ((name, None), target)
           | (name, Some (`Eq, v)), Some target ->
@@ -604,9 +591,8 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   OpamPackage.Set.iter (fun nv ->
       let opam = OpamSwitchState.opam st nv in
       let orig_dir =
-        match OpamFile.OPAM.get_metadata_dir
-              ~repos_roots:(OpamRepositoryPath.root gt.root) opam with
-        | Some dir -> dir
+        match OpamFile.OPAM.metadata_dir opam with
+        | Some (_, dir) -> OpamFilename.Dir.of_string dir
         | None -> assert false
       in
       let opam_f = OpamFile.make OpamFilename.Op.(orig_dir // "opam") in
