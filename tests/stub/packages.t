@@ -370,11 +370,11 @@ Bundle single package `bar` of version 2. That implies installation of its depen
   I'm launching foo v.2 !
   $ opam exec --root ./bar-bundle/opam -- bar
   I'm launching bar v.2 !
-  $ find BAR | sort
+  $ test -d BAR && find BAR | sort
   BAR
   BAR/bin
   BAR/bin/bar
-  $ BAR/bin/bar
+  $ test -f BAR/bin/bar && BAR/bin/bar
   I'm launching bar v.2 !
 
 Cleaning up
@@ -501,14 +501,14 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
   I'm launching foo v.3 !
   $ opam exec --root ./bar-bundle/opam -- bar
   I'm launching with patch bar v.3 !
-  $ find BAR | sort
+  $ test -d BAR && find BAR | sort
   BAR
   BAR/bin
   BAR/bin/bar
   BAR/bin/foo
-  $ BAR/bin/foo
+  $ test -f BAR/bin/foo && BAR/bin/foo
   I'm launching foo v.3 !
-  $ BAR/bin/bar
+  $ test -f BAR/bin/bar && BAR/bin/bar
   I'm launching with patch bar v.3 !
 
 Cleaning up
@@ -643,14 +643,14 @@ wrapper.
   I'm launching with patch foo v.4 !
   $ opam exec --root ./bar-bundle/opam -- bar
   I'm launching with patch bar v.3 !
-  $ find BAR | sort
+  $ test -d BAR && find BAR | sort
   BAR
   BAR/bin
   BAR/bin/bar
   BAR/bin/foo
-  $ BAR/bin/foo
+  $ test -f BAR/bin/foo && BAR/bin/foo
   I'm launching with patch foo v.4 !
-  $ BAR/bin/bar
+  $ test -f BAR/bin/bar && BAR/bin/bar
   I'm launching with patch bar v.3 !
 
 
