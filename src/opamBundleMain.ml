@@ -62,6 +62,13 @@ let opam_archive_url opamv =
     tag tag
   |> OpamUrl.of_string
 
+let get_repo_root_raw root name =
+  let tgz = OpamRepositoryRoot.Tgz.Path.root root name in
+  if OpamRepositoryRoot.Tgz.exists tgz then
+    OpamRepositoryRoot.Tgz tgz
+  else
+    OpamRepositoryRoot.Dir (OpamRepositoryRoot.Dir.Path.root root name)
+
 let output_extension = "tar.gz"
 
 let stdlib_output = output
@@ -76,6 +83,7 @@ let highest_opam_version = function
   | "2.3" -> "2.3.0"
   | "2.4" -> "2.4.1"
   | "2.5" -> "2.5.2"
+  | "2.6" -> "2.6.0"
   | v -> v
 
 let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
@@ -83,6 +91,7 @@ let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
   OpamClientConfig.opam_init
     ~debug_level:(if debug then 1 else 0)
     ~yes:(if yes then Some true else None)
+    ~depexts:false
     ();
   let open OpamFilename.Op in
   let repo =
@@ -236,6 +245,7 @@ let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
   in
   let gt = {
     global_lock = OpamSystem.lock_none;
+    lock = OpamSystem.lock_none;
     root = opam_root;
     config =
       OpamFile.Config.empty
@@ -250,12 +260,14 @@ let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
     repositories = repos_map;
     repos_definitions =
       OpamRepositoryName.Map.map (fun r ->
-          OpamFile.Repo.safe_read
-            OpamRepositoryPath.(repo (root gt.root r.repo_name)) |>
-          OpamFile.Repo.with_root_url r.repo_url)
+          let repo_root = get_repo_root_raw opam_root r.repo_name in
+          (match OpamRepositoryRoot.delayed_read_repo repo_root with
+           | true, repofile -> repofile ()
+           | false, _ -> OpamFile.Repo.empty)
+          |> OpamFile.Repo.with_root_url r.repo_url)
         repos_map;
     repo_opams = OpamRepositoryName.Map.empty;
-    repos_tmp = Hashtbl.create 1;
+    repos_syspkgs_available = None;
   } in
   let failed_repos, rt =
     OpamRepositoryCommand.update_with_auto_upgrade rt
@@ -594,27 +606,70 @@ let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
       ~dl_cache:[cache_dirname]
       ()
   in
-  OpamFile.Repo.write (OpamRepositoryPath.repo target_repo) repo_file;
+  let target_repo_root = OpamRepositoryRoot.Dir.of_dir target_repo in
+  OpamFile.Repo.write
+  (OpamRepositoryRoot.Dir.Path.repo target_repo_root)
+  repo_file;
   let target_dest f nv =
-    f target_repo (Some (OpamPackage.name_to_string nv)) nv
+    f target_repo_root (Some (OpamPackage.name_to_string nv)) nv
+  in
+  let copy_dir_files st nv orig_dir =
+    let opam_f = OpamFile.make (orig_dir // OpamRepositoryPathName.opam_f) in
+    let files_dir = (orig_dir / OpamRepositoryPathName.files_d) in
+    let opam = OpamSwitchState.opam st nv in
+    OpamFile.OPAM.write_with_preserved_format ~format_from:opam_f
+      (target_dest OpamRepositoryRoot.Dir.Path.opam nv) opam;
+    if OpamFilename.exists_dir files_dir then
+      OpamFilename.copy_dir
+        ~src:files_dir
+        ~dst:(target_dest OpamRepositoryRoot.Dir.Path.files nv)
   in
   OpamPackage.Set.iter (fun nv ->
       let opam = OpamSwitchState.opam st nv in
-      let orig_dir =
-        match OpamFile.OPAM.metadata_dir opam with
-        | Some (Some r, dir) -> OpamRepositoryPath.root opam_root r / dir
-        | Some (None, dir) -> OpamFilename.Dir.of_string dir
-        | None -> assert false
-      in
-      let opam_f = OpamFile.make (orig_dir // "opam") in
-      let files_dir = (orig_dir / "files") in
-      let opam = OpamSwitchState.opam st nv in
-      OpamFile.OPAM.write_with_preserved_format ~format_from:opam_f
-        (target_dest OpamRepositoryPath.opam nv) opam;
-      if OpamFilename.exists_dir files_dir then
-        OpamFilename.copy_dir
-          ~src:files_dir
-          ~dst:(target_dest OpamRepositoryPath.files nv))
+      match OpamFile.OPAM.metadata_dir opam with
+      | Some (Some r, dir) ->
+        (match get_repo_root_raw opam_root r with
+         | OpamRepositoryRoot.Tgz repo_root ->
+           (let open OpamFilename.Unix.Op in
+            let orig_dir = OpamFilename.Unix.Dir.of_string dir in
+            let opamcontent =
+              match
+                OpamRepositoryRoot.Tgz.filter_files (fun filename ->
+                    OpamFilename.Unix.equal filename
+                    (orig_dir // OpamRepositoryPathName.opam_f))
+                  repo_root
+              with
+              | [] -> None
+              | [_,c] -> Some c
+              | _ -> assert false
+            in
+            let opam = OpamSwitchState.opam st nv in
+            OpamFile.OPAM.write_with_preserved_format
+              ?format_from_string:opamcontent
+              (target_dest OpamRepositoryRoot.Dir.Path.opam nv) opam;
+            match
+              OpamRepositoryRoot.Tgz.filter_files (fun filename ->
+                  OpamFilename.Unix.starts_with
+                  (orig_dir / OpamRepositoryPathName.files_d) filename)
+                repo_root
+            with
+            | [] -> ()
+            | files ->
+              let files_dir = target_dest OpamRepositoryRoot.Dir.Path.files nv in
+              List.iter (fun (filename, content) ->
+                  OpamFilename.write
+                    OpamFilename.Op.(files_dir
+                                     // OpamFilename.Unix.to_string filename)
+                    content)
+                files)
+         | OpamRepositoryRoot.Dir repo_root ->
+           let repo_root = OpamRepositoryRoot.Dir.to_dir repo_root in
+           let orig_dir = repo_root / dir in
+           copy_dir_files st nv orig_dir)
+      | Some (None, dir) ->
+        let orig_dir =OpamFilename.Dir.of_string dir in
+        copy_dir_files st nv orig_dir
+      | None -> assert false)
     include_packages;
   let pull_to_cache nv =
     let link ?extra urlf target =
@@ -714,7 +769,7 @@ let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
           | None ->
             (match  List.find_opt (fun (name,_) -> name = basename) extra_files with
               | Some _ -> (* extra-files *)
-                OpamFilename.Op.(target_dest OpamRepositoryPath.files nv
+                OpamFilename.Op.(target_dest OpamRepositoryRoot.Dir.Path.files nv
                                 // OpamFilename.Base.to_string basename)
               | None ->
                 OpamConsole.error_and_exit `Not_found
@@ -727,7 +782,7 @@ let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
     end;
     if opam <> opam0 then
       OpamFile.OPAM.write_with_preserved_format
-        (target_dest OpamRepositoryPath.opam nv) opam
+        (target_dest OpamRepositoryRoot.Dir.Path.opam nv) opam
   in
   let randomised_pkglist =
     (* Some pseudo-randomisation to avoid downloading all files from
