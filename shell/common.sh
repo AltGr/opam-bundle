@@ -10,11 +10,11 @@ title() {
 }
 logged_cmd() {
   local R=0
-  printf "$1... "
+  printf "%s... " "$1"
   shift
-  echo "+ [ $1 ] $*" >>$LOG
-  "$@" >>$LOG 2>&1 || R=$?
-  echo >>$LOG
+  echo "+ [ $1 ] $*" >> "$LOG"
+  "$@" >> "$LOG" 2>&1 || R=$?
+  echo >> "$LOG"
   if [ $R -eq 0 ]; then printf "\033[32mdone\033[m\n"; return
   else echo; return $R
   fi
@@ -31,4 +31,4 @@ finished() {
 export PATH="$PREFIX/bin:$PATH"
 export CAML_LD_LIBRARY_PATH="$PREFIX/lib/ocaml/stublibs"
 export OPAMROOT
-cd $DIR
+cd "$DIR"

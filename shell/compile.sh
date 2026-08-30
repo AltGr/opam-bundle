@@ -11,7 +11,7 @@ usage() {
    echo "  -h --help		show this help"
    echo "  -l --list		list the opam packages included"
    echo "  -y --yes		don't stop for confirmation"
-   exit $1
+   exit "$1"
 }
 
 DESTDIR=
@@ -29,7 +29,7 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-if [ "X${DIR#/tmp}" != "X$DIR" ] && [ -z "$YES" ]; then
+if [ "${DIR#/tmp}" != "$DIR" ] && [ -z "$YES" ]; then
   echo "ERROR: you are going to install into /tmp. Everything is likely to get wiped"
   echo "       on reboot."
   echo "       Move to a more permanent location, or use '--yes' to force."
@@ -56,12 +56,12 @@ echo "Output is in $LOG"
 
 # Redirect sudo to extract the commands
 rm -f "$DIR/needs_sudo"
-cat >${PREFIX}/bin/sudo <<EOF
+cat > "${PREFIX}/bin/sudo" <<EOF
 #!/bin/sh -ue
 echo "\$@" >>"$DIR/needs_sudo"
 exit 1
 EOF
-chmod +x ${PREFIX}/bin/sudo
+chmod +x "${PREFIX}/bin/sudo"
 
 R=0
 logged_cmd "Compiling packages" opam install --yes %{install_packages}% %{doc?--with-doc:}% %{test?--with-test:}% || R=$?
