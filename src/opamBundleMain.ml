@@ -102,6 +102,10 @@ let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
       let v = match v with
       | "2.0" -> "2.0.10"
       | "2.1" -> "2.1.4"
+      | "2.2" -> "2.2.1"
+      | "2.3" -> "2.3.0"
+      | "2.4" -> "2.4.1"
+      | "2.5" -> "2.5.2"
       | _ -> v
       in
       OpamConsole.formatted_msg "Opam version is set to %s.\n"
