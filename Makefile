@@ -2,7 +2,7 @@ all: build
 
 build:
 	dune build
-	cp _build/install/default/bin/opam-bundle .
+	ln -vfs _build/install/default/bin/opam-bundle .
 
 stub-tests:
 	dune build @runtest tests/stub
@@ -17,7 +17,7 @@ test: tests
 .PHONY: clean
 clean:
 	dune clean
+	rm opam-bundle
 
 distclean: clean
 	rm -rf _build
-	rm opam-bundle
