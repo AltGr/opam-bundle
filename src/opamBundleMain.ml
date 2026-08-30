@@ -753,6 +753,14 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     let env v = match OpamVariable.Full.to_string v with
       | "ocamlv" -> Some (S (OpamPackage.Version.to_string ocamlv))
       | "opam_archive" -> Some (S (OpamUrl.basename opam_url))
+      | "with-vendored-deps" ->
+        let with_vendored_opam = OpamPackage.Version.of_string "2.2" in
+        let wvd =
+          if OpamPackage.Version.compare with_vendored_opam opamv <= 0 then
+            "--with-vendored-deps"
+          else ""
+        in
+        Some (S wvd)
       | "install_packages" ->
         Some (S (OpamStd.List.concat_map " " OpamPackage.to_string
                    (OpamPackage.Set.elements install_packages)))

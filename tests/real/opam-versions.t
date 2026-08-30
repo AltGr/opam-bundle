@@ -374,21 +374,35 @@ opam version 2.2
   
   This may take a while. Output is in $TESTCASE_ROOT/bar-bundle/bootstrap.log
   Uncompressing... done
-  Configuring... 
+  Configuring... done
+  Compiling extra dependencies... done
+  Compiling... done
+  Installing to temp prefix... done
   
-  Something went wrong, see log in $TESTCASE_ROOT/bar-bundle/bootstrap.log
+  ================ Configure: initialising opam                  ================
+  
+  Output is in $TESTCASE_ROOT/bar-bundle/configure.log
+  Initialising... done
+  Creating sandbox... done
   
   ================ Compile: installing packages                  ================
   
   Output is in $TESTCASE_ROOT/bar-bundle/compile.log
-  Compiling packages... 
+  Compiling packages... done
+  Cleaning up... done
   
-  Something went wrong, see log in $TESTCASE_ROOT/bar-bundle/compile.log
-  [50]
+  All compiled within $TESTCASE_ROOT/bar-bundle. To use the compiled packages:
+  
+    - either re-run ./bar-bundle/compile.sh with a PREFIX argument to install command wrappers
+      (it won't recompile everything)
+  
+    - or run the following to update the environment in the current shell, so that
+      they are in your PATH:
+        export PATH="$TESTCASE_ROOT/bar-bundle/bootstrap/bin:$PATH"; eval $(opam env --root "$TESTCASE_ROOT/bar-bundle/opam" --set-root)
+  
   $ test -f bar-bundle/bootstrap/bin/opam
-  [1]
   $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
-  [1]
+  I'm launching bar !
 
 Cleaning up
   $ rm -r bar-bundle bar-bundle.tar.gz
@@ -456,21 +470,35 @@ opam version 2.3
   
   This may take a while. Output is in $TESTCASE_ROOT/bar-bundle/bootstrap.log
   Uncompressing... done
-  Configuring... 
+  Configuring... done
+  Compiling extra dependencies... done
+  Compiling... done
+  Installing to temp prefix... done
   
-  Something went wrong, see log in $TESTCASE_ROOT/bar-bundle/bootstrap.log
+  ================ Configure: initialising opam                  ================
+  
+  Output is in $TESTCASE_ROOT/bar-bundle/configure.log
+  Initialising... done
+  Creating sandbox... done
   
   ================ Compile: installing packages                  ================
   
   Output is in $TESTCASE_ROOT/bar-bundle/compile.log
-  Compiling packages... 
+  Compiling packages... done
+  Cleaning up... done
   
-  Something went wrong, see log in $TESTCASE_ROOT/bar-bundle/compile.log
-  [50]
+  All compiled within $TESTCASE_ROOT/bar-bundle. To use the compiled packages:
+  
+    - either re-run ./bar-bundle/compile.sh with a PREFIX argument to install command wrappers
+      (it won't recompile everything)
+  
+    - or run the following to update the environment in the current shell, so that
+      they are in your PATH:
+        export PATH="$TESTCASE_ROOT/bar-bundle/bootstrap/bin:$PATH"; eval $(opam env --root "$TESTCASE_ROOT/bar-bundle/opam" --set-root)
+  
   $ test -f bar-bundle/bootstrap/bin/opam
-  [1]
   $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
-  [1]
+  I'm launching bar !
 
 Cleaning up
   $ rm -r bar-bundle bar-bundle.tar.gz
@@ -544,21 +572,35 @@ opam version 2.4
   
   This may take a while. Output is in $TESTCASE_ROOT/bar-bundle/bootstrap.log
   Uncompressing... done
-  Configuring... 
+  Configuring... done
+  Compiling extra dependencies... done
+  Compiling... done
+  Installing to temp prefix... done
   
-  Something went wrong, see log in $TESTCASE_ROOT/bar-bundle/bootstrap.log
+  ================ Configure: initialising opam                  ================
+  
+  Output is in $TESTCASE_ROOT/bar-bundle/configure.log
+  Initialising... done
+  Creating sandbox... done
   
   ================ Compile: installing packages                  ================
   
   Output is in $TESTCASE_ROOT/bar-bundle/compile.log
-  Compiling packages... 
+  Compiling packages... done
+  Cleaning up... done
   
-  Something went wrong, see log in $TESTCASE_ROOT/bar-bundle/compile.log
-  [50]
+  All compiled within $TESTCASE_ROOT/bar-bundle. To use the compiled packages:
+  
+    - either re-run ./bar-bundle/compile.sh with a PREFIX argument to install command wrappers
+      (it won't recompile everything)
+  
+    - or run the following to update the environment in the current shell, so that
+      they are in your PATH:
+        export PATH="$TESTCASE_ROOT/bar-bundle/bootstrap/bin:$PATH"; eval $(opam env --root "$TESTCASE_ROOT/bar-bundle/opam" --set-root)
+  
   $ test -f bar-bundle/bootstrap/bin/opam
-  [1]
   $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
-  [1]
+  I'm launching bar !
 
 Cleaning up
   $ rm -r bar-bundle bar-bundle.tar.gz
@@ -632,21 +674,35 @@ opam version 2.5
   
   This may take a while. Output is in $TESTCASE_ROOT/bar-bundle/bootstrap.log
   Uncompressing... done
-  Configuring... 
+  Configuring... done
+  Compiling extra dependencies... done
+  Compiling... done
+  Installing to temp prefix... done
   
-  Something went wrong, see log in $TESTCASE_ROOT/bar-bundle/bootstrap.log
+  ================ Configure: initialising opam                  ================
+  
+  Output is in $TESTCASE_ROOT/bar-bundle/configure.log
+  Initialising... done
+  Creating sandbox... done
   
   ================ Compile: installing packages                  ================
   
   Output is in $TESTCASE_ROOT/bar-bundle/compile.log
-  Compiling packages... 
+  Compiling packages... done
+  Cleaning up... done
   
-  Something went wrong, see log in $TESTCASE_ROOT/bar-bundle/compile.log
-  [50]
+  All compiled within $TESTCASE_ROOT/bar-bundle. To use the compiled packages:
+  
+    - either re-run ./bar-bundle/compile.sh with a PREFIX argument to install command wrappers
+      (it won't recompile everything)
+  
+    - or run the following to update the environment in the current shell, so that
+      they are in your PATH:
+        export PATH="$TESTCASE_ROOT/bar-bundle/bootstrap/bin:$PATH"; eval $(opam env --root "$TESTCASE_ROOT/bar-bundle/opam" --set-root)
+  
   $ test -f bar-bundle/bootstrap/bin/opam
-  [1]
   $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
-  [1]
+  I'm launching bar !
 
 Cleaning up
   $ rm -r bar-bundle bar-bundle.tar.gz

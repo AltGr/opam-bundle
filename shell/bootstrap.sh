@@ -73,7 +73,7 @@ else
    logged_cmd "Uncompressing" tar xzf "%{opam_archive}%"
    archive_dir="$(basename "%{opam_archive}%" .tar.gz)"
    cd "$archive_dir"
-   logged_cmd "Configuring" ./configure --prefix "$PREFIX"
+   logged_cmd "Configuring" ./configure --prefix "$PREFIX" "%{with-vendored-deps}%"
    logged_cmd "Compiling extra dependencies" make lib-ext
    logged_cmd "Compiling" make
    logged_cmd "Installing to temp prefix" make install
