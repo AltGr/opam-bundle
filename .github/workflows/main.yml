@@ -19,6 +19,10 @@ jobs:
           - 4.12.x
           - 4.13.x
           - 4.14.x
+          - 5.1.x
+          - 5.2.x
+          - 5.3.x
+          - 5.4.x
 
     runs-on: ${{ matrix.os }}
 
@@ -35,4 +39,4 @@ jobs:
       - run: opam exec -- make
       - run: opam exec -- make stub-tests
       - run: opam exec -- make real-tests
-        if: matrix.ocaml-compiler == '4.14.x'
+        if: matrix.ocaml-compiler == '4.14.x' || matrix.ocaml-compiler == '5.4.x'
