@@ -3,7 +3,7 @@ This test verify bundling of real package `opam-ed.0.1` (old version) with compi
   $ . ../env-vars
   $ export ARCHIVE_REPO_ARG="--repo git+https://github.com/ocaml/opam-repository-archive"
   $ export ARCHIVE_REPO_ARG="$ARCHIVE_REPO_ARG --repo git+https://github.com/ocaml/opam-repository#c9af4994e07b4a3a2c4b3c5442aabe63dd5d0381"
-  $ opam-bundle opam-ed.0.1 --ocaml=4.14.2 --opam=2.0 --self --yes $ARCHIVE_REPO_ARG 2>&1 | sed -f ../arch.sed
+  $ opam-bundle opam-ed.0.1 --ocaml=4.14.2 --opam=2.0 --self --yes --archive-repo 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.2.
   Opam version is set to 2.0.10.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -14,11 +14,14 @@ This test verify bundling of real package `opam-ed.0.1` (old version) with compi
     - os-family = $OSFAMILLY
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
-  [github.com] Initialised
-  [github.com1] Initialised
-  github.com1 (at git+https://github.com/ocaml/opam-repository#c9af4994e07b4a3a2c4b3c5442aabe63dd5d0381): 
-      [INFO] opam 2.1 and 2.2 include many performance and security improvements over 2.0; please consider upgrading (https://opam.ocaml.org/doc/Install.html)
+  [opam.ocaml.org] Initialised
+  opam.ocaml.org (at https://opam.ocaml.org): 
+      [INFO] please ensure to have GNU patch installed as `patch`. Otherwise update may fail silently (since it can't remove files).
   
+  opam.ocaml.org (at https://opam.ocaml.org): 
+      [WARNING] opam >= 2.5.2 includes important security fixes; please consider upgrading (https://opam.ocaml.org/doc/Install.html)
+  
+  [github.com] Initialised
   
   <><> Resolving package set ><><><><><><><><><><><><><><><><><><><><><><><><><><>
   The following packages will be included:

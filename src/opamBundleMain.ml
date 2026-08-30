@@ -65,14 +65,20 @@ let opam_archive_url opamv =
 let output_extension = "tar.gz"
 
 let stdlib_output = output
+let archive_repository =
+  OpamUrl.of_string "git+https://github.com/ocaml/opam-repository-archive"
 
-let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
-    packages_targets =
+let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
+    self_extract packages_targets =
   OpamClientConfig.opam_init
     ~debug_level:(if debug then 1 else 0)
     ~yes:(if yes then Some true else None)
     ();
   let open OpamFilename.Op in
+  let repo =
+    if repo_archive then archive_repository :: repo
+    else repo
+  in
   let packages = List.map fst packages_targets in
   let ocamlv = match ocamlv with
     | Some v ->
@@ -885,6 +891,15 @@ let repo_arg =
           This makes it possible to bootstrap opam and compile the requested \
           packages with a single compilation of OCaml.")
 
+let repo_archive_arg =
+  Arg.(value & flag & info ["archive-repository"] ~doc:
+         "Opam repository was split into main and archive repository. This \
+          option enables the archive repository \
+          https://github.com/ocaml/opam-repository-archive to look up for \
+          packages, if no other is given through $(b,--repository). If you want \
+          to refer to another repository or set a more specific version of the \
+          archive repository, please use $(b,--repository).")
+
 let debug_arg =
   Arg.(value & flag & info ["debug"] ~doc:
          "Display debug information about what's going on.")
@@ -970,10 +985,14 @@ let man = [
 ]
 
 let create_bundle_command =
-  Term.(const create_bundle $ ocamlv_arg $ opamv_arg $ repo_arg $ debug_arg $
-        output_arg $ env_arg $ with_test_arg $ with_doc_arg $ yes_arg $
-        self_extract_arg $
-        packages_arg)
+  Term.(const create_bundle $ ocamlv_arg $ opamv_arg
+        $ repo_arg $ repo_archive_arg
+        $ debug_arg $ output_arg
+        $ env_arg
+        $ with_test_arg $ with_doc_arg
+        $ yes_arg
+        $ self_extract_arg
+        $ packages_arg)
 
 let info = Cmd.info "opam-bundle" ~man ~doc:
     "Creates standalone source bundle from opam packages"
