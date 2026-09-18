@@ -141,7 +141,7 @@ Ocaml-base-compiler.4.14.0 package.
   > EOF
 Opam setup
   $ mkdir $OPAMROOT
-  $ opam init --bare ./REPO --no-setup --bypass-checks
+  $ opam init --bare ./REPO --no-setup --bypass-checks --disable-sandboxing
   No configuration file found, using built-in defaults.
   
   <><> Fetching repository information ><><><><><><><><><><><><><><><><><><><><><>

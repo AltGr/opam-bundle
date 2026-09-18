@@ -245,7 +245,7 @@ Ocaml-config.2 package.
   > EOF
 Opam setup
   $ mkdir $OPAMROOT
-  $ opam init --bare repo1 ./REPO1 --no-setup --bypass-checks
+  $ opam init --bare repo1 ./REPO1 --no-setup --bypass-checks --disable-sandboxing
   No configuration file found, using built-in defaults.
   
   <><> Fetching repository information ><><><><><><><><><><><><><><><><><><><><><>
