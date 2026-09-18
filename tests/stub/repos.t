@@ -239,20 +239,6 @@ Ocaml-config.2 package.
   >  checksum: "sha256=$SHA"
   > }
   > EOF
-Opam setup
-  $ mkdir $OPAMROOT
-  $ opam init --bare repo1 ./REPO1 --no-setup --bypass-checks
-  No configuration file found, using built-in defaults.
-  
-  <><> Fetching repository information ><><><><><><><><><><><><><><><><><><><><><>
-  [repo1] Initialised
-
-  $ opam switch create one --empty
-
-  $ opam repo add repo2 ./REPO2 --all-switches
-  [repo2] Initialised
-  $ opam repo add repo3 ./REPO3 --all-switches
-  [repo3] Initialised
 
 
 

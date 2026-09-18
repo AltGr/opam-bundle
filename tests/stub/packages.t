@@ -236,14 +236,6 @@ Ocaml-base-compiler.4.14.0 package.
   >  checksum: "sha256=$OCAMLSHA"
   > }
   > EOF
-Opam setup
-  $ mkdir $OPAMROOT
-  $ opam init --bare ./REPO --no-setup --bypass-checks
-  No configuration file found, using built-in defaults.
-  
-  <><> Fetching repository information ><><><><><><><><><><><><><><><><><><><><><>
-  [default] Initialised
-  $ opam switch create one --empty
 
 
 
@@ -362,9 +354,9 @@ Bundle single package `bar` of version 2. That implies installation of its depen
   Cleaning up... done
   Wrapper bar installed successfully.
 
-  $ opam exec --root ./bar-bundle/opam -- foo
+  $ test -f ./bar-bundle/opam/default/bin/foo && ./bar-bundle/opam/default/bin/foo
   I'm launching foo v.2 !
-  $ opam exec --root ./bar-bundle/opam -- bar
+  $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
   I'm launching bar v.2 !
   $ test -d BAR && find BAR | sort
   BAR
@@ -493,9 +485,9 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
   Wrapper bar installed successfully.
   Wrapper foo installed successfully.
 
-  $ opam exec --root ./bar-bundle/opam -- foo
+  $ test -f ./bar-bundle/opam/default/bin/foo && ./bar-bundle/opam/default/bin/foo
   I'm launching foo v.3 !
-  $ opam exec --root ./bar-bundle/opam -- bar
+  $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
   I'm launching with patch bar v.3 !
   $ test -d BAR && find BAR | sort
   BAR
@@ -635,9 +627,9 @@ wrapper.
   Wrapper bar installed successfully.
   Wrapper foo installed successfully.
 
-  $ opam exec --root ./bar-bundle/opam -- foo
+  $ test -f ./bar-bundle/opam/default/bin/foo && ./bar-bundle/opam/default/bin/foo
   I'm launching with patch foo v.4 !
-  $ opam exec --root ./bar-bundle/opam -- bar
+  $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
   I'm launching with patch bar v.3 !
   $ test -d BAR && find BAR | sort
   BAR

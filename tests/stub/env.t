@@ -136,14 +136,6 @@ Ocaml-base-compiler.4.14.0 package.
   >  checksum: "sha256=$OCAMLSHA"
   > }
   > EOF
-Opam setup
-  $ mkdir $OPAMROOT
-  $ opam init --bare ./REPO --no-setup --bypass-checks
-  No configuration file found, using built-in defaults.
-  
-  <><> Fetching repository information ><><><><><><><><><><><><><><><><><><><><><>
-  [default] Initialised
-  $ opam switch create one --empty
 
 
 
