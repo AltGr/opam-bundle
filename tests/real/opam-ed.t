@@ -1,5 +1,9 @@
 This test verify bundling of real package `opam-ed.0.1` (old version) with compiler version 4.14.2 and opam version 2.0.
 
+Unsetting setup-ocaml variables
+  $ unset OPAMPRECISETRACKING
+  $ unset OPAMEXTERNALSOLVER
+Set some opam variables for the cram test
   $ export OPAMNOENVNOTICE=1
   $ export OPAMYES=1
   $ export OPAMROOT=$PWD/OPAMROOT
