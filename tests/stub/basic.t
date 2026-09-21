@@ -2,12 +2,16 @@ This test verify basic functionalities of `opam-bundle`. Every package used is a
 More complex tests on various options could be found in *stub* directory. Tests with real repositories
 and packages are under *complex* directory.
 
-Repo initial setup with two packages `foo` and `bar` that depends on `foo` and other required packages.
+Unsetting setup-ocaml variables
+  $ unset OPAMPRECISETRACKING
+  $ unset OPAMEXTERNALSOLVER
+Set some opam variables for the cram test
   $ export OPAMNOENVNOTICE=1
   $ export OPAMYES=1
   $ export OPAMROOT=$PWD/OPAMROOT
   $ export OPAMSTATUSLINE=never
   $ export OPAMVERBOSE=-1
+Repo initial setup with two packages `foo` and `bar` that depends on `foo` and other required packages.
   $ cat > compile << EOF
   > #!/bin/sh
   > echo "I'm launching \$(basename \${0}) \$@!"

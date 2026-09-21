@@ -1,5 +1,9 @@
 This test verify bundling of real package `opam-bundle` of version 0.4.
 
+Unsetting setup-ocaml variables
+  $ unset OPAMPRECISETRACKING
+  $ unset OPAMEXTERNALSOLVER
+Set some opam variables for the cram test
   $ export OPAMNOENVNOTICE=1
   $ export OPAMYES=1
   $ export OPAMROOT=$PWD/OPAMROOT
