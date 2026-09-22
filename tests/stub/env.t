@@ -1,12 +1,17 @@
 This test verify different environment specifications that could be used with `opam-bundle`.
 Every package used is a stub package.
 
-Repo initial setup with three packages `foo`, `bar`, and `baz`, with specific availabilities
+Unsetting setup-ocaml variables
+  $ unset OPAMPRECISETRACKING
+  $ unset OPAMEXTERNALSOLVER
+Set some opam variables for the cram test
   $ export OPAMNOENVNOTICE=1
   $ export OPAMYES=1
   $ export OPAMROOT=$PWD/OPAMROOT
   $ export OPAMSTATUSLINE=never
   $ export OPAMVERBOSE=-1
+
+Repo initial setup with three packages `foo`, `bar`, and `baz`, with specific availabilities
 Stub executable
   $ cat > compile << EOF
   > #!/bin/sh
@@ -141,7 +146,7 @@ Ocaml-base-compiler.4.14.0 package.
   > EOF
 Opam setup
   $ mkdir $OPAMROOT
-  $ opam init --bare ./REPO --no-setup --bypass-checks
+  $ opam init --bare ./REPO --no-setup --bypass-checks --disable-sandboxing
   No configuration file found, using built-in defaults.
   
   <><> Fetching repository information ><><><><><><><><><><><><><><><><><><><><><>
@@ -159,7 +164,7 @@ Running opam-bundle with sanitized output that contains replaced platform specif
 Bundle package `baz`, without '--environment' option. That should lookup current platform (that should be linux), and filter packages in dependencies that
 are available on linux os (`foo` not included).
 
-  $ opam-bundle baz --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle baz --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):

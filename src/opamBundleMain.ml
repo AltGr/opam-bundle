@@ -72,6 +72,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     ~debug_level:(if debug then 1 else 0)
     ~yes:(if yes then Some true else None)
     ();
+  let open OpamFilename.Op in
   let packages = List.map fst packages_targets in
   let ocamlv = match ocamlv with
     | Some v ->
@@ -180,9 +181,9 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     ]
   in
   OpamFilename.with_tmp_dir @@ fun tmp ->
-  let opam_root = OpamFilename.Op.(tmp / "root") in
+  let opam_root = tmp / "root" in
   OpamStateConfig.update ~root_dir:opam_root ();
-  (* let repos_dir = OpamFilename.Op.(tmp / "repos") in *)
+  (* let repos_dir = tmp / "repos" in *)
   (* *** *)
   OpamConsole.header_msg "Initialising repositories";
   let gen_repo_name repos_map base =
@@ -229,6 +230,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       |> OpamFile.Config.with_repositories repos_list
       |> OpamFile.Config.with_dl_cache dl_cache;
     global_variables = env;
+    global_state_to_upgrade = { gtc_repo = false; gtc_switch = false };
   } in
   let rt = {
     repos_global = (gt :> unlocked global_state);
@@ -304,7 +306,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     if List.for_all (fun (_,target) -> target = None) packages_targets then
       OpamPackage.Map.empty, OpamPackage.Map.empty
     else
-    let srcs = OpamFilename.Op.(tmp / "sources") in
+    let srcs = tmp / "sources" in
     OpamConsole.header_msg "Getting external packages";
     let pkgs_urls =
       OpamStd.List.filter_map (function
@@ -318,9 +320,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     let pkgs_src =
       OpamParallel.map ~jobs:OpamStateConfig.(!r.dl_jobs)
         ~command:(fun ((name, v), url) ->
-            let srcdir =
-              OpamFilename.Op.(srcs / OpamPackage.Name.to_string name)
-            in
+            let srcdir = srcs / OpamPackage.Name.to_string name in
             OpamRepository.pull_tree (OpamPackage.Name.to_string name)
               srcdir [] [url] @@| function
             | Not_available (s, _) ->
@@ -341,7 +341,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       in
       let nv, opam =
         match OpamPinned.find_opam_file_in_source name src with
-        | Some f ->
+        | Some (f, _) ->
           OpamConsole.note
             "Will use package definition found in source for %s"
             (OpamPackage.Name.to_string name);
@@ -411,8 +411,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
                  and none was found in the repositories"
                 (OpamPackage.Name.to_string name)
       in
-      let archive =
-        OpamFilename.Op.(srcs // (OpamPackage.to_string nv^".tar.gz"))
+      let archive = srcs // (OpamPackage.to_string nv^".tar.gz")
       in
       OpamFilename.mkdir (OpamFilename.dirname archive);
       OpamProcess.Job.run @@
@@ -568,13 +567,13 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     OpamStd.Sys.exit_because `Aborted;
   (* *** *)
   OpamConsole.header_msg "Getting all archives";
-  let bundle_dir = OpamFilename.Op.(tmp / bundle_name) in
-  let compiler_patches_dir = OpamFilename.Op.(bundle_dir / "patches") in
-  let target_repo = OpamFilename.Op.(bundle_dir / "repo") in
+  let bundle_dir = tmp / bundle_name in
+  let compiler_patches_dir = bundle_dir / "patches" in
+  let target_repo = bundle_dir / "repo" in
   let cache_dirname = "cache" in
-  let target_cache = OpamFilename.Op.(target_repo / cache_dirname) in
+  let target_cache = target_repo / cache_dirname in
   let links_dirname = "archives" in
-  let target_links = OpamFilename.Op.(target_repo / links_dirname) in
+  let target_links = target_repo / links_dirname in
   OpamFilename.mkdir target_repo;
   OpamFilename.mkdir target_cache;
   OpamFilename.mkdir target_links;
@@ -595,8 +594,8 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
         | Some dir -> dir
         | None -> assert false
       in
-      let opam_f = OpamFile.make OpamFilename.Op.(orig_dir // "opam") in
-      let files_dir = OpamFilename.Op.(orig_dir / "files") in
+      let opam_f = OpamFile.make (orig_dir // "opam") in
+      let files_dir = (orig_dir / "files") in
       let opam = OpamSwitchState.opam st nv in
       OpamFile.OPAM.write_with_preserved_format ~format_from:opam_f
         (target_dest OpamRepositoryPath.opam nv) opam;
@@ -612,9 +611,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
           (OpamUrl.basename (OpamFile.URL.url urlf))
           extra
       in
-      let link =
-        OpamFilename.Op.(target_links / OpamPackage.to_string nv // name)
-      in
+      let link = target_links / OpamPackage.to_string nv // name in
       OpamFilename.link ~relative:true ~target ~link
     in
     let dl_job ?extra urlf =
@@ -630,7 +627,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
       match OpamFile.URL.checksum urlf with
       | [] ->
         OpamFilename.with_tmp_dir_job @@ fun dldir ->
-        let f = OpamFilename.Op.(dldir // OpamPackage.to_string nv) in
+        let f = dldir // OpamPackage.to_string nv in
         OpamRepository.pull_file name f []
           (OpamFile.URL.url urlf :: OpamFile.URL.mirrors urlf)
         @@| (function
@@ -713,7 +710,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
                   (OpamFilename.Base.to_string basename))
         in
           let name = Format.sprintf "patch%d.patch" i in
-          OpamFilename.copy ~src ~dst:OpamFilename.Op.(compiler_patches_dir // name))
+          OpamFilename.copy ~src ~dst:(compiler_patches_dir // name))
         patches
     end;
     if opam <> opam0 then
@@ -732,12 +729,19 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   OpamParallel.iter ~jobs:OpamStateConfig.(!r.dl_jobs)
     ~command:pull_to_cache
     randomised_pkglist;
+  (* Resolve links as opam.2.6.0 binary doesn't support symlinks in archives.
+     These links are added by the link function above, and by
+     OpamRepository.pull_file_to_cache that creates links in hashes directory *)
+  OpamFilename.rec_files target_cache
+  |> List.iter (fun f ->
+      if OpamFilename.is_symlink f then
+        (let realpath = OpamFilename.readlink f in
+         OpamFilename.remove f;
+         OpamFilename.copy ~src:realpath ~dst:f));
   (* *** *)
   OpamConsole.header_msg "Getting bootstrap packages";
   let opam_url = opam_archive_url opamv in
-  let opam_archive =
-    OpamFilename.Op.(bundle_dir // OpamUrl.basename opam_url)
-  in
+  let opam_archive = bundle_dir // OpamUrl.basename opam_url in
   OpamProcess.Job.run @@
   OpamRepository.pull_file (OpamUrl.basename opam_url) opam_archive
     [(*todo:checksums*)]
@@ -772,7 +776,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   in
   List.iter (fun name ->
       let script = List.assoc name scripts in
-      let file = OpamFilename.Op.(bundle_dir // name) in
+      let file = bundle_dir // name in
       OpamFilename.write file script;
       if name <> "common.sh" then OpamFilename.chmod file 0o755)
     include_scripts;

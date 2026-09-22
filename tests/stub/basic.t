@@ -2,12 +2,16 @@ This test verify basic functionalities of `opam-bundle`. Every package used is a
 More complex tests on various options could be found in *stub* directory. Tests with real repositories
 and packages are under *complex* directory.
 
-Repo initial setup with two packages `foo` and `bar` that depends on `foo` and other required packages.
+Unsetting setup-ocaml variables
+  $ unset OPAMPRECISETRACKING
+  $ unset OPAMEXTERNALSOLVER
+Set some opam variables for the cram test
   $ export OPAMNOENVNOTICE=1
   $ export OPAMYES=1
   $ export OPAMROOT=$PWD/OPAMROOT
   $ export OPAMSTATUSLINE=never
   $ export OPAMVERBOSE=-1
+Repo initial setup with two packages `foo` and `bar` that depends on `foo` and other required packages.
   $ cat > compile << EOF
   > #!/bin/sh
   > echo "I'm launching \$(basename \${0}) \$@!"
@@ -113,7 +117,7 @@ Ocaml-base-compiler.4.14.0 package.
   > EOF
 Opam setup
   $ mkdir $OPAMROOT
-  $ opam init --bare ./REPO --no-setup --bypass-checks
+  $ opam init --bare ./REPO --no-setup --bypass-checks --disable-sandboxing
   No configuration file found, using built-in defaults.
   
   <><> Fetching repository information ><><><><><><><><><><><><><><><><><><><><><>
@@ -130,7 +134,7 @@ Running opam-bundle with sanitized output that contains remplaced platform speci
 
 Bundle single package `foo`.
 
-  $ opam-bundle foo.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle foo.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -237,7 +241,7 @@ Bundle single package `foo`.
 
 Bundle package `bar` that depends on `foo`.
 
-  $ opam-bundle bar.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -353,7 +357,7 @@ Cleaning up
 
 Bundle package `bar` that depends on `foo` with self-extracting script.
 
-  $ opam-bundle bar.1 --self --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.1 --self --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
