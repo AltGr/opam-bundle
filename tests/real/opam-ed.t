@@ -8,9 +8,8 @@ Set some opam variables for the cram test
   $ export OPAMYES=1
   $ export OPAMROOT=$PWD/OPAMROOT
   $ export OPAMSTATUSLINE=never
-  $ export ARCHIVE_REPO_ARG="--repo git+https://github.com/ocaml/opam-repository-archive"
-  $ export ARCHIVE_REPO_ARG="$ARCHIVE_REPO_ARG --repo git+https://github.com/ocaml/opam-repository#c9af4994e07b4a3a2c4b3c5442aabe63dd5d0381"
-  $ opam-bundle opam-ed.0.1 --ocaml=4.14.2 --opam=2.0 --self --yes $ARCHIVE_REPO_ARG 2>&1 | sed -f ../arch.sed
+  $ export OPAMDOWNLOADJOBS=1
+  $ opam-bundle opam-ed.0.1 --ocaml=4.14.2 --opam=2.0 --self --yes --archive-repo 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.2.
   Opam version is set to 2.0.10.
   No environment specified, will use the following for package resolution (based on the host system):
