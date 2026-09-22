@@ -134,7 +134,7 @@ Running opam-bundle with sanitized output that contains remplaced platform speci
 
 Bundle single package `foo`.
 
-  $ opam-bundle foo.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle foo.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -241,7 +241,7 @@ Bundle single package `foo`.
 
 Bundle package `bar` that depends on `foo`.
 
-  $ opam-bundle bar.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -357,7 +357,7 @@ Cleaning up
 
 Bundle package `bar` that depends on `foo` with self-extracting script.
 
-  $ opam-bundle bar.1 --self --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.1 --self --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
