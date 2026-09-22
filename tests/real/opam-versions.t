@@ -316,8 +316,7 @@ opam version 2.1
   
   $ test -f bar-bundle/bootstrap/bin/opam
   $ opam exec --root ./bar-bundle/opam -- bar
-  Fatal error: symlinks unsupported
-  [99]
+  I'm launching bar !
 
 Cleaning up
   $ rm -r bar-bundle bar-bundle.tar.gz

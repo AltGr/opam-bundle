@@ -729,6 +729,15 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   OpamParallel.iter ~jobs:OpamStateConfig.(!r.dl_jobs)
     ~command:pull_to_cache
     randomised_pkglist;
+  (* Resolve links as opam.2.6.0 binary doesn't support symlinks in archives.
+     These links are added by the link function above, and by
+     OpamRepository.pull_file_to_cache that creates links in hashes directory *)
+  OpamFilename.rec_files target_cache
+  |> List.iter (fun f ->
+      if OpamFilename.is_symlink f then
+        (let realpath = OpamFilename.readlink f in
+         OpamFilename.remove f;
+         OpamFilename.copy ~src:realpath ~dst:f));
   (* *** *)
   OpamConsole.header_msg "Getting bootstrap packages";
   let opam_url = opam_archive_url opamv in
