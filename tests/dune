@@ -1,4 +1,4 @@
 (cram
  (applies_to :whole_subtree)
- (deps %{bin:opam-bundle} ./arch.sed)
+ (deps %{bin:opam-bundle} ./arch.sed ./env-vars)
 )

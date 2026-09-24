@@ -1,14 +1,6 @@
 This test verify bundling of real package `opam-bundle` of version 0.4.
 
-Unsetting setup-ocaml variables
-  $ unset OPAMPRECISETRACKING
-  $ unset OPAMEXTERNALSOLVER
-Set some opam variables for the cram test
-  $ export OPAMNOENVNOTICE=1
-  $ export OPAMYES=1
-  $ export OPAMROOT=$PWD/OPAMROOT
-  $ export OPAMSTATUSLINE=never
-  $ export OPAMVERBOSE=-1
+  $ . ../env-vars
   $ export REPO_ARG="--repo git+https://github.com/ocaml/opam-repository#c9af4994e07b4a3a2c4b3c5442aabe63dd5d0381"
   $ export OPAMBUNDLE_TGZ="opam-bundle@https://github.com/AltGr/opam-bundle/archive/refs/tags/0.4.tar.gz"
   $ opam-bundle $OPAMBUNDLE_TGZ opam-client.2.0.10 --self --opam=2.1 --ocaml=4.14.3 $REPO_ARG --yes 2>&1 | sed -f ../arch.sed
