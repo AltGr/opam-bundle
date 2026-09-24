@@ -150,7 +150,7 @@ are available on linux os (`foo` not included).
 
   $ opam-bundle baz --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
-  No opam version selected, will use 2.1.4.
+  No opam version selected, will use 2.5.2.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -185,7 +185,7 @@ are available on linux os (`foo` not included).
   baz-bundle/common.sh
   baz-bundle/compile.sh
   baz-bundle/configure.sh
-  baz-bundle/opam-full-2.1.4.tar.gz
+  baz-bundle/opam-full-2.5.2.tar.gz
   baz-bundle/repo/
   baz-bundle/repo/archives/
   baz-bundle/repo/archives/bar.1/
@@ -231,7 +231,7 @@ are available on cygwin os (`bar` not included).
 
   $ opam-bundle baz --environment os="cygwin" --repository ./REPO --ocaml=4.14.0 -y 2>&1
   OCaml version is set to 4.14.0.
-  No opam version selected, will use 2.1.4.
+  No opam version selected, will use 2.5.2.
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
@@ -262,7 +262,7 @@ are available on cygwin os (`bar` not included).
   baz-bundle/common.sh
   baz-bundle/compile.sh
   baz-bundle/configure.sh
-  baz-bundle/opam-full-2.1.4.tar.gz
+  baz-bundle/opam-full-2.5.2.tar.gz
   baz-bundle/repo/
   baz-bundle/repo/archives/
   baz-bundle/repo/archives/baz.1/
@@ -308,7 +308,7 @@ all dependencies.
 
   $ opam-bundle baz --environment --repository ./REPO --ocaml=4.14.0 -y 2>&1
   OCaml version is set to 4.14.0.
-  No opam version selected, will use 2.1.4.
+  No opam version selected, will use 2.5.2.
   [NOTE] Empty environment
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -341,7 +341,7 @@ all dependencies.
   baz-bundle/common.sh
   baz-bundle/compile.sh
   baz-bundle/configure.sh
-  baz-bundle/opam-full-2.1.4.tar.gz
+  baz-bundle/opam-full-2.5.2.tar.gz
   baz-bundle/repo/
   baz-bundle/repo/archives/
   baz-bundle/repo/archives/bar.1/
@@ -391,7 +391,7 @@ Trying bundle package `bar` on cygwin. That will fail, since this package isn't 
 
   $ opam-bundle bar --environment os="cygwin" --repository ./REPO --ocaml=4.14.0 -y 2>&1
   OCaml version is set to 4.14.0.
-  No opam version selected, will use 2.1.4.
+  No opam version selected, will use 2.5.2.
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
