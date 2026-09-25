@@ -54,7 +54,7 @@ let exclude_packages ocamlv = [
 
 let opam_archive_url opamv =
   let tag =
-    OpamStd.String.map (function '~' -> '-' | c -> c)
+    Stdlib.String.map (function '~' -> '-' | c -> c)
       (OpamPackage.Version.to_string opamv)
   in
   Printf.sprintf
@@ -309,7 +309,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
     let srcs = tmp / "sources" in
     OpamConsole.header_msg "Getting external packages";
     let pkgs_urls =
-      OpamStd.List.filter_map (function
+      Stdlib.List.filter_map (function
           | _, None -> None
           | (name, None), Some target -> Some ((name, None), target)
           | (name, Some (`Eq, v)), Some target ->
@@ -589,9 +589,9 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
   OpamPackage.Set.iter (fun nv ->
       let opam = OpamSwitchState.opam st nv in
       let orig_dir =
-        match OpamFile.OPAM.get_metadata_dir
-              ~repos_roots:(OpamRepositoryPath.root gt.root) opam with
-        | Some dir -> dir
+        match OpamFile.OPAM.metadata_dir opam with
+        | Some (Some r, dir) -> OpamRepositoryPath.root opam_root r / dir
+        | Some (None, dir) -> OpamFilename.Dir.of_string dir
         | None -> assert false
       in
       let opam_f = OpamFile.make (orig_dir // "opam") in
@@ -828,7 +828,7 @@ let create_bundle ocamlv opamv repo debug output env test doc yes self_extract
 
 (* -- command-line handling -- *)
 
-open Cmdliner
+open OpamCmdliner
 
 let pkg_version_conv =
   Arg.conv ~docv:"VERSION" (
