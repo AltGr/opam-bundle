@@ -35,14 +35,14 @@ check_prereq rsync
 
 if [ -n "$MISSING" ]; then
     printf "This source bundle requires the following tools to bootstrap, and they are\n"
-    printf "absent from this system. Please install them first:\n   $MISSING\n\n"
+    printf "absent from this system. Please install them first:\n   %s\n\n" "$MISSING"
     finished
     exit 10
 fi
 
 apply_patches() {
-    for patch in $(ls ../patches/*.patch | sort); do
-        patch -p1 < $patch
+    for patch in $(find ../patches/*.patch | sort); do
+        patch -p1 < "$patch"
     done
 }
 
@@ -71,13 +71,14 @@ else
 
    echo "This may take a while. Output is in $LOG"
    logged_cmd "Uncompressing" tar xzf "%{opam_archive}%"
-   cd $(basename "%{opam_archive}%" .tar.gz)
+   archive_dir="$(basename "%{opam_archive}%" .tar.gz)"
+   cd "$archive_dir"
    logged_cmd "Configuring" ./configure --prefix "$PREFIX"
    logged_cmd "Compiling extra dependencies" make lib-ext
    logged_cmd "Compiling" make
    logged_cmd "Installing to temp prefix" make install
    cd "$DIR"
-   rm -rf $(basename "%{opam_archive}%" .tar.gz)
+   rm -rf "$archive_dir"
 fi
 
 finished
