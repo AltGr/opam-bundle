@@ -182,6 +182,7 @@ Bar packages.
   > -echo "I'm launching \$(basename \${0}) v.3 \$@!"
   > +echo "I'm launching with patch \$(basename \${0}) v.3 \$@!"
   > EOF
+  $ PATCH_MD5=`openssl md5 REPO/packages/bar/bar.3/files/test.patch | cut -d ' ' -f 2`
   $ cat > REPO/packages/bar/bar.3/opam << EOF
   > opam-version: "2.0"
   > version: "3"
@@ -198,6 +199,9 @@ Bar packages.
   >  src: "file://./compile3.tar.gz"
   >  checksum: "sha256=$SHA3"
   > }
+  > extra-files: [
+  >  ["test.patch" "md5=$PATCH_MD5"]
+  > ]
   > EOF
 Ocaml-system.4.14.0 package.
   $ mkdir -p REPO/packages/ocaml-system/ocaml-system.4.14.0
