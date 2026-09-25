@@ -254,7 +254,7 @@ only `ocaml.4.14` packages. We are forcing here to use 4.12 from second switch.
 
   $ opam-bundle foo --repository ./REPO1 --repository ./REPO3 --ocaml=4.12.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.12.0.
-  No opam version selected, will use 2.1.4.
+  No opam version selected, will use 2.5.2.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -295,7 +295,7 @@ package and third containing required ocaml-config.2. We are forcing here to use
 
   $ opam-bundle foo bar --repository ./REPO1 --repository ./REPO2 --repository ./REPO3 --ocaml=4.13.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.13.0.
-  No opam version selected, will use 2.1.4.
+  No opam version selected, will use 2.5.2.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -337,7 +337,7 @@ Trying bundle foo package with a repository that hasn't required package (ocaml-
 
   $ opam-bundle foo --repository ./REPO1 --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
-  No opam version selected, will use 2.1.4.
+  No opam version selected, will use 2.5.2.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -364,7 +364,7 @@ Trying bundle foo package with a repositories that hasn't required ocaml version
 
   $ opam-bundle foo --repository ./REPO1 --repository ./REPO3 --ocaml=4.13.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.13.0.
-  No opam version selected, will use 2.1.4.
+  No opam version selected, will use 2.5.2.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS

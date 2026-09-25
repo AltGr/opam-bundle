@@ -205,9 +205,9 @@ Cleaning up
 
 opam version 2.1
 
-  $ opam-bundle bar.1 $REPO --ocaml=4.14.4 --opam=2.1.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.1 $REPO --ocaml=4.14.4 --opam=2.1 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
   OCaml version is set to 4.14.4.
-  Opam version is set to 2.1.0.
+  Opam version is set to 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -310,9 +310,9 @@ Cleaning up
 
 opam version 2.2
 
-  $ opam-bundle bar.1 $REPO --ocaml=4.14.4 --opam=2.2.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.1 $REPO --ocaml=4.14.4 --opam=2.2 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
   OCaml version is set to 4.14.4.
-  Opam version is set to 2.2.0.
+  Opam version is set to 2.2.1.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -323,9 +323,6 @@ opam version 2.2
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
   [opam.ocaml.org] Initialised
-  opam.ocaml.org (at https://opam.ocaml.org): 
-      [INFO] opam is out-of-date. Please consider updating (https://opam.ocaml.org/doc/Install.html)
-  
   opam.ocaml.org (at https://opam.ocaml.org): 
       [WARNING] opam >= 2.5.2 includes important security fixes; please consider upgrading (https://opam.ocaml.org/doc/Install.html)
   
@@ -412,7 +409,7 @@ Cleaning up
 
 opam version 2.3
 
-  $ opam-bundle bar.1 $REPO --ocaml=4.14.4 --opam=2.3.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.1 $REPO --ocaml=4.14.4 --opam=2.3 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
   OCaml version is set to 4.14.4.
   Opam version is set to 2.3.0.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -508,9 +505,9 @@ Cleaning up
 
 opam version 2.4
 
-  $ opam-bundle bar.1 $REPO --ocaml=4.14.4 --opam=2.4.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.1 $REPO --ocaml=4.14.4 --opam=2.4 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
   OCaml version is set to 4.14.4.
-  Opam version is set to 2.4.0.
+  Opam version is set to 2.4.1.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -521,9 +518,6 @@ opam version 2.4
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
   [opam.ocaml.org] Initialised
-  opam.ocaml.org (at https://opam.ocaml.org): 
-      [INFO] opam is out-of-date. Please consider updating (https://opam.ocaml.org/doc/Install.html)
-  
   opam.ocaml.org (at https://opam.ocaml.org): 
       [WARNING] opam >= 2.5.2 includes important security fixes; please consider upgrading (https://opam.ocaml.org/doc/Install.html)
   
@@ -610,9 +604,9 @@ Cleaning up
 
 opam version 2.5
 
-  $ opam-bundle bar.1 $REPO --ocaml=4.14.4 --opam=2.5.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.1 $REPO --ocaml=4.14.4 --opam=2.5 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
   OCaml version is set to 4.14.4.
-  Opam version is set to 2.5.0.
+  Opam version is set to 2.5.2.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -623,12 +617,6 @@ opam version 2.5
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
   [opam.ocaml.org] Initialised
-  opam.ocaml.org (at https://opam.ocaml.org): 
-      [INFO] opam is out-of-date. Please consider updating (https://opam.ocaml.org/doc/Install.html)
-  
-  opam.ocaml.org (at https://opam.ocaml.org): 
-      [WARNING] opam >= 2.5.2 includes important security fixes; please consider upgrading (https://opam.ocaml.org/doc/Install.html)
-  
   
   <><> Resolving package set ><><><><><><><><><><><><><><><><><><><><><><><><><><>
   The following packages will be included:

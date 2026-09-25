@@ -68,6 +68,16 @@ let stdlib_output = output
 let archive_repository =
   OpamUrl.of_string "git+https://github.com/ocaml/opam-repository-archive"
 
+let default_opam_version = "2.5"
+let highest_opam_version = function
+  | "2.0" -> "2.0.10"
+  | "2.1" -> "2.1.4"
+  | "2.2" -> "2.2.1"
+  | "2.3" -> "2.3.0"
+  | "2.4" -> "2.4.1"
+  | "2.5" -> "2.5.2"
+  | v -> v
+
 let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
     self_extract packages_targets =
   OpamClientConfig.opam_init
@@ -99,16 +109,12 @@ let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
   let opamv =
     match Option.map OpamPackage.Version.to_string opamv with
     | Some v ->
-      let v = match v with
-      | "2.0" -> "2.0.10"
-      | "2.1" -> "2.1.4"
-      | _ -> v
-      in
+      let v = highest_opam_version v in
       OpamConsole.formatted_msg "Opam version is set to %s.\n"
         (OpamConsole.colorise `bold v);
       OpamPackage.Version.of_string v
     | None ->
-      let default = "2.1.4" in
+      let default = highest_opam_version default_opam_version in
       OpamConsole.formatted_msg "No opam version selected, will use %s.\n"
         (OpamConsole.colorise `bold default);
       OpamPackage.Version.of_string default
