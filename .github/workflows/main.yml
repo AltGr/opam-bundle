@@ -3,6 +3,12 @@ name: Opam bundle
 on:
   pull_request:
   push:
+    branches:
+      - 'master'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -12,22 +18,23 @@ jobs:
         os:
           - ubuntu-latest
         ocaml-compiler:
-          - 4.08.x
-          - 4.09.x
-          - 4.10.x
           - 4.11.x
           - 4.12.x
           - 4.13.x
           - 4.14.x
+          - 5.1.x
+          - 5.2.x
+          - 5.3.x
+          - 5.4.x
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
+        uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
@@ -35,4 +42,4 @@ jobs:
       - run: opam exec -- make
       - run: opam exec -- make stub-tests
       - run: opam exec -- make real-tests
-        if: matrix.ocaml-compiler == '4.14.x'
+        if: matrix.ocaml-compiler == '4.14.x' || matrix.ocaml-compiler == '5.4.x'
