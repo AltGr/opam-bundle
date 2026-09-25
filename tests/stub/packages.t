@@ -1,11 +1,7 @@
 This test verify different package specifications that could be used with `opam-bundle`.
 Every package used is a stub package.
 
-  $ export OPAMNOENVNOTICE=1
-  $ export OPAMYES=1
-  $ export OPAMROOT=$PWD/OPAMROOT
-  $ export OPAMSTATUSLINE=never
-  $ export OPAMVERBOSE=-1
+  $ . ../env-vars
 Different version of one stub executable
   $ cat > compile << EOF
   > #!/bin/sh
@@ -240,14 +236,6 @@ Ocaml-base-compiler.4.14.0 package.
   >  checksum: "sha256=$OCAMLSHA"
   > }
   > EOF
-Opam setup
-  $ mkdir $OPAMROOT
-  $ opam init --bare ./REPO --no-setup --bypass-checks
-  No configuration file found, using built-in defaults.
-  
-  <><> Fetching repository information ><><><><><><><><><><><><><><><><><><><><><>
-  [default] Initialised
-  $ opam switch create one --empty
 
 
 
@@ -259,7 +247,7 @@ Running opam-bundle with sanitized output that contains replaced platform specif
 
 Bundle single package `bar` of version 2. That implies installation of its dependency `foo` with constraint "<=2".
 
-  $ opam-bundle bar.2 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.2 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -366,19 +354,19 @@ Bundle single package `bar` of version 2. That implies installation of its depen
   Cleaning up... done
   Wrapper bar installed successfully.
 
-  $ opam exec --root ./bar-bundle/opam -- foo
+  $ test -f ./bar-bundle/opam/default/bin/foo && ./bar-bundle/opam/default/bin/foo
   I'm launching foo v.2 !
-  $ opam exec --root ./bar-bundle/opam -- bar
+  $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
   I'm launching bar v.2 !
-  $ find BAR | sort
+  $ test -d BAR && find BAR | sort
   BAR
   BAR/bin
   BAR/bin/bar
-  $ BAR/bin/bar
+  $ test -f BAR/bin/bar && BAR/bin/bar
   I'm launching bar v.2 !
 
 Cleaning up
-  $ rm -r BAR bar-bundle bar-bundle.tar.gz
+  $ rm -rf BAR bar-bundle bar-bundle.tar.gz
 
 
 ============================== Test 2 ==============================
@@ -387,7 +375,7 @@ Cleaning up
 Bundle two packages `bar` and `foo>2`. Forcing constraint on `foo` implies installation of `bar.3`.
 Since `foo` was specified as argument to `opam-bundle` it installs additionally `foo` wrapper.
 
-  $ opam-bundle bar 'foo>2' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar 'foo>2' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -497,22 +485,22 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
   Wrapper bar installed successfully.
   Wrapper foo installed successfully.
 
-  $ opam exec --root ./bar-bundle/opam -- foo
+  $ test -f ./bar-bundle/opam/default/bin/foo && ./bar-bundle/opam/default/bin/foo
   I'm launching foo v.3 !
-  $ opam exec --root ./bar-bundle/opam -- bar
+  $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
   I'm launching with patch bar v.3 !
-  $ find BAR | sort
+  $ test -d BAR && find BAR | sort
   BAR
   BAR/bin
   BAR/bin/bar
   BAR/bin/foo
-  $ BAR/bin/foo
+  $ test -f BAR/bin/foo && BAR/bin/foo
   I'm launching foo v.3 !
-  $ BAR/bin/bar
+  $ test -f BAR/bin/bar && BAR/bin/bar
   I'm launching with patch bar v.3 !
 
 Cleaning up
-  $ rm -r BAR bar-bundle bar-bundle.tar.gz
+  $ rm -rf BAR bar-bundle bar-bundle.tar.gz
 
 
 ============================== Test 3 ==============================
@@ -523,7 +511,7 @@ has extra-source (opam-bundle archive 0.4) that should be also bundled. Forcing 
 installation of `bar.3`. Since `foo` was specified as argument to `opam-bundle` it installs additionally `foo`
 wrapper.
 
-  $ opam-bundle bar 'foo@foo.4' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/;s/md5=.*/md5=$HASH/' | sed 's/.* No such file or directory/mv error/g'
+  $ opam-bundle bar 'foo@foo.4' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed | sed 's/md5=.*/md5=$HASH/' | sed 's/.* No such file or directory/mv error/g'
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -639,18 +627,18 @@ wrapper.
   Wrapper bar installed successfully.
   Wrapper foo installed successfully.
 
-  $ opam exec --root ./bar-bundle/opam -- foo
+  $ test -f ./bar-bundle/opam/default/bin/foo && ./bar-bundle/opam/default/bin/foo
   I'm launching with patch foo v.4 !
-  $ opam exec --root ./bar-bundle/opam -- bar
+  $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
   I'm launching with patch bar v.3 !
-  $ find BAR | sort
+  $ test -d BAR && find BAR | sort
   BAR
   BAR/bin
   BAR/bin/bar
   BAR/bin/foo
-  $ BAR/bin/foo
+  $ test -f BAR/bin/foo && BAR/bin/foo
   I'm launching with patch foo v.4 !
-  $ BAR/bin/bar
+  $ test -f BAR/bin/bar && BAR/bin/bar
   I'm launching with patch bar v.3 !
 
 
@@ -660,7 +648,7 @@ wrapper.
 
 Trying to bundle two packages `bar.3` and `foo.1`. This should fail, because those versions are not compatible.
 
-  $ opam-bundle bar.3 foo.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.3 foo.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -687,7 +675,7 @@ Trying to bundle two packages `bar.3` and `foo.1`. This should fail, because tho
 
 Trying to bundle two packages `bar` and `foo<3@foo.4`. This should fail, because package with url can be constrained only with '.' or '='.
 
-  $ opam-bundle bar 'foo<2@foo.4' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar 'foo<2@foo.4' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   opam-bundle: PACKAGE… arguments: Only equality version constraints can be
                specified together with a target URL
   Usage: opam-bundle [OPTION]… PACKAGE…

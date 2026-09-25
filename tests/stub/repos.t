@@ -1,11 +1,7 @@
 This test verify different repository specifications that could be used with `opam-bundle`.
 Every package used is a stub package.
 
-  $ export OPAMNOENVNOTICE=1
-  $ export OPAMYES=1
-  $ export OPAMROOT=$PWD/OPAMROOT
-  $ export OPAMSTATUSLINE=never
-  $ export OPAMVERBOSE=-1
+  $ . ../env-vars
 Stub executable
   $ cat > compile << EOF
   > #!/bin/sh
@@ -243,20 +239,6 @@ Ocaml-config.2 package.
   >  checksum: "sha256=$SHA"
   > }
   > EOF
-Opam setup
-  $ mkdir $OPAMROOT
-  $ opam init --bare repo1 ./REPO1 --no-setup --bypass-checks
-  No configuration file found, using built-in defaults.
-  
-  <><> Fetching repository information ><><><><><><><><><><><><><><><><><><><><><>
-  [repo1] Initialised
-
-  $ opam switch create one --empty
-
-  $ opam repo add repo2 ./REPO2 --all-switches
-  [repo2] Initialised
-  $ opam repo add repo3 ./REPO3 --all-switches
-  [repo3] Initialised
 
 
 
@@ -270,7 +252,7 @@ Running opam-bundle with sanitized output that contains replaced platform specif
 Bundle package foo with and specifyng two repositories with `ocaml.4.12` and second repository containing
 only `ocaml.4.14` packages. We are forcing here to use 4.12 from second switch.
 
-  $ opam-bundle foo --repository ./REPO1 --repository ./REPO3 --ocaml=4.12.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle foo --repository ./REPO1 --repository ./REPO3 --ocaml=4.12.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.12.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -311,7 +293,7 @@ only `ocaml.4.14` packages. We are forcing here to use 4.12 from second switch.
 Bundle packages foo and bar with specifying three repositories with `foo` and second repository containing `bar`
 package and third containing required ocaml-config.2. We are forcing here to use 4.13 from switch.
 
-  $ opam-bundle foo bar --repository ./REPO1 --repository ./REPO2 --repository ./REPO3 --ocaml=4.13.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle foo bar --repository ./REPO1 --repository ./REPO2 --repository ./REPO3 --ocaml=4.13.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.13.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -353,7 +335,7 @@ package and third containing required ocaml-config.2. We are forcing here to use
 
 Trying bundle foo package with a repository that hasn't required package (ocaml-config). That should fail.
 
-  $ opam-bundle foo --repository ./REPO1 --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle foo --repository ./REPO1 --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -380,7 +362,7 @@ Trying bundle foo package with a repository that hasn't required package (ocaml-
 
 Trying bundle foo package with a repositories that hasn't required ocaml version. That should fail.
 
-  $ opam-bundle foo --repository ./REPO1 --repository ./REPO3 --ocaml=4.13.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle foo --repository ./REPO1 --repository ./REPO3 --ocaml=4.13.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.13.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):

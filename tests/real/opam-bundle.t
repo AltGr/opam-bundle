@@ -1,12 +1,10 @@
 This test verify bundling of real package `opam-bundle` of version 0.4.
 
-  $ export OPAMNOENVNOTICE=1
-  $ export OPAMYES=1
-  $ export OPAMROOT=$PWD/OPAMROOT
-  $ export OPAMSTATUSLINE=never
-  $ export OPAMVERBOSE=-1
-  $ opam-bundle "opam-bundle@https://github.com/AltGr/opam-bundle/archive/refs/tags/0.4.tar.gz" opam-client.2.0.10 --self --opam=2.1 --ocaml=4.14.0 --yes 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
-  OCaml version is set to 4.14.0.
+  $ . ../env-vars
+  $ export REPO_ARG="--repo git+https://github.com/ocaml/opam-repository#c9af4994e07b4a3a2c4b3c5442aabe63dd5d0381"
+  $ export OPAMBUNDLE_TGZ="opam-bundle@https://github.com/AltGr/opam-bundle/archive/refs/tags/0.4.tar.gz"
+  $ opam-bundle $OPAMBUNDLE_TGZ opam-client.2.0.10 --self --opam=2.1 --ocaml=4.14.3 $REPO_ARG --yes 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 4.14.3.
   Opam version is set to 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
@@ -16,7 +14,10 @@ This test verify bundling of real package `opam-bundle` of version 0.4.
     - os-family = $OSFAMILLY
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
-  [opam.ocaml.org] Initialised
+  [github.com] Initialised
+  github.com (at git+https://github.com/ocaml/opam-repository#c9af4994e07b4a3a2c4b3c5442aabe63dd5d0381): 
+      [WARNING] opam is out-of-date. Please consider updating it (https://opam.ocaml.org/doc/Install.html)
+  
   
   <><> Getting external packages ><><><><><><><><><><><><><><><><><><><><><><><><>
   [NOTE] Will use package definition found in source for opam-bundle
@@ -27,21 +28,22 @@ This test verify bundling of real package `opam-bundle` of version 0.4.
     - base-bytes.base
     - base-threads.base
     - base-unix.base
-    - cmdliner.1.2.0
-    - cppo.1.6.9
+    - cmdliner.1.3.0
+    - conf-c++.1.0
+    - cppo.1.8.0
     - cudf.0.10
     - dose3.5.0.1-2
-    - dune.3.7.1
+    - dune.3.22.1
     - extlib.1.7.7-1
-    - mccs.1.1+14
-    - ocaml.4.14.0
-    - ocaml-base-compiler.4.14.0
-    - ocaml-bootstrap.4.14.0
+    - mccs.1.1+19
+    - ocaml.4.14.3
+    - ocaml-base-compiler.4.14.3
+    - ocaml-bootstrap.4.14.3
     - ocaml-config.2
     - ocaml-options-vanilla.1
-    - ocamlbuild.0.14.2
-    - ocamlfind.1.9.6
-    - ocamlgraph.2.0.0
+    - ocamlbuild.0.16.1
+    - ocamlfind.1.9.8
+    - ocamlgraph.2.2.0
     - opam-bundle.0.4
     - opam-client.2.0.10
     - opam-core.2.0.10
@@ -50,10 +52,8 @@ This test verify bundling of real package `opam-bundle` of version 0.4.
     - opam-repository.2.0.10
     - opam-solver.2.0.10
     - opam-state.2.0.10
-    - re.1.10.4
-    - seq.base
-    - stdlib-shims.0.3.0
-  The bundle will be installable on systems matching the following: os != "win32"
+    - re.1.14.0
+  The bundle will be installable on systems matching the following: (os != "win32" | sys-ocaml-libc = "msvc") & os != "win32"
   [NOTE] Opam system sandboxing (introduced in 2.0) will be disabled in the bundle. You need to trust that the build scripts of the included packages don't write outside of their build directory and dest dir.
   Continue ? [Y/n] y
   

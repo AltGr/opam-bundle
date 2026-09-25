@@ -2,12 +2,8 @@ This test verify basic functionalities of `opam-bundle`. Every package used is a
 More complex tests on various options could be found in *stub* directory. Tests with real repositories
 and packages are under *complex* directory.
 
+  $ . ../env-vars
 Repo initial setup with two packages `foo` and `bar` that depends on `foo` and other required packages.
-  $ export OPAMNOENVNOTICE=1
-  $ export OPAMYES=1
-  $ export OPAMROOT=$PWD/OPAMROOT
-  $ export OPAMSTATUSLINE=never
-  $ export OPAMVERBOSE=-1
   $ cat > compile << EOF
   > #!/bin/sh
   > echo "I'm launching \$(basename \${0}) \$@!"
@@ -111,14 +107,6 @@ Ocaml-base-compiler.4.14.0 package.
   >  checksum: "sha256=$OCAMLSHA"
   > }
   > EOF
-Opam setup
-  $ mkdir $OPAMROOT
-  $ opam init --bare ./REPO --no-setup --bypass-checks
-  No configuration file found, using built-in defaults.
-  
-  <><> Fetching repository information ><><><><><><><><><><><><><><><><><><><><><>
-  [default] Initialised
-  $ opam switch create one --empty
 
 
 
@@ -130,7 +118,7 @@ Running opam-bundle with sanitized output that contains remplaced platform speci
 
 Bundle single package `foo`.
 
-  $ opam-bundle foo.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle foo.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -228,7 +216,7 @@ Bundle single package `foo`.
       they are in your PATH:
         export PATH="$TESTCASE_ROOT/foo-bundle/bootstrap/bin:$PATH"; eval $(opam env --root "$TESTCASE_ROOT/foo-bundle/opam" --set-root)
   
-  $ opam exec --root ./foo-bundle/opam -- foo
+  $ test -f ./foo-bundle/opam/default/bin/foo && ./foo-bundle/opam/default/bin/foo
   I'm launching foo !
 
 
@@ -237,7 +225,7 @@ Bundle single package `foo`.
 
 Bundle package `bar` that depends on `foo`.
 
-  $ opam-bundle bar.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -332,9 +320,9 @@ Bundle package `bar` that depends on `foo`.
   Compiling packages... done
   Cleaning up... done
   Wrapper bar installed successfully.
-  $ opam exec --root ./bar-bundle/opam -- bar
+  $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
   I'm launching bar !
-  $ opam exec --root ./bar-bundle/opam -- foo
+  $ test -f ./bar-bundle/opam/default/bin/foo && ./bar-bundle/opam/default/bin/foo
   I'm launching foo !
   $ find BAR | sort
   BAR
@@ -353,7 +341,7 @@ Cleaning up
 
 Bundle package `bar` that depends on `foo` with self-extracting script.
 
-  $ opam-bundle bar.1 --self --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  $ opam-bundle bar.1 --self --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
   No opam version selected, will use 2.1.4.
   No environment specified, will use the following for package resolution (based on the host system):
@@ -429,7 +417,7 @@ Bundle package `bar` that depends on `foo` with self-extracting script.
         export PATH="$TESTCASE_ROOT/bar-bundle/bootstrap/bin:$PATH"; eval $(opam env --root "$TESTCASE_ROOT/bar-bundle/opam" --set-root)
   
 
-  $ opam exec --root ./bar-bundle/opam -- bar
+  $ test -f ./bar-bundle/opam/default/bin/bar && ./bar-bundle/opam/default/bin/bar
   I'm launching bar !
-  $ opam exec --root ./bar-bundle/opam -- foo
+  $ test -f ./bar-bundle/opam/default/bin/foo && ./bar-bundle/opam/default/bin/foo
   I'm launching foo !
