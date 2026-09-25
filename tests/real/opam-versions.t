@@ -694,3 +694,98 @@ opam version 2.5
 
 Cleaning up
   $ rm -r bar-bundle bar-bundle.tar.gz
+
+============================== Test 6 ==============================
+
+
+opam version 2.6
+
+  $ opam-bundle bar.1 $REPO --ocaml=4.14.4 --opam=2.6 -y 2>&1 | sed 's/arch =.*/arch = $ARCH/;s/os =.*/os = $OS/;s/os-distribution =.*/os-distribution = $OSDISTRIB/;s/os-version =.*/os-version = $OSVERSION/;s/os-family =.*/os-family = $OSFAMILLY/'
+  OCaml version is set to 4.14.4.
+  Opam version is set to 2.6.0.
+  No environment specified, will use the following for package resolution (based on the host system):
+    - arch = $ARCH
+    - os = $OS
+    - os-distribution = $OSDISTRIB
+    - os-version = $OSVERSION
+    - os-family = $OSFAMILLY
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [opam.ocaml.org] Initialised
+  
+  <><> Resolving package set ><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  The following packages will be included:
+    - bar.1
+    - base-bigarray.base
+    - base-threads.base
+    - base-unix.base
+    - ocaml.4.14.4
+    - ocaml-base-compiler.4.14.4
+    - ocaml-bootstrap.4.14.4
+    - ocaml-config.2
+    - ocaml-options-vanilla.1
+    - oof.2
+  The bundle will be installable on systems matching the following: (os != "win32" | sys-ocaml-libc = "msvc") & os != "win32"
+  [NOTE] Opam system sandboxing (introduced in 2.0) will be disabled in the bundle. You need to trust that the build scripts of the included packages don't write outside of their build directory and dest dir.
+  Continue ? [Y/n] y
+  
+  <><> Getting all archives <><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  
+  <><> Getting bootstrap packages <><><><><><><><><><><><><><><><><><><><><><><><>
+  
+  <><> Building bundle ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  Done. Bundle generated as $TESTCASE_ROOT/bar-bundle.tar.gz
+  $ tar xf bar-bundle.tar.gz
+  $ cp -R bootstrap bar-bundle/
+  $ sh ./bar-bundle/compile.sh
+  This bundle will compile the application to $TESTCASE_ROOT/bar-bundle, WITHOUT installing
+  wrappers anywhere else.
+  
+  Press enter to continue... 
+  ================ Bootstrap: checking for prerequisites         ================
+  
+  Checking for cc... found
+  Checking for make... found
+  Checking for wget curl... found
+  Checking for patch... found
+  Checking for unzip... found
+  Checking for bunzip2... found
+  Checking for rsync... found
+  Already compiled OCaml found
+  
+  ================ Bootstrap: compiling opam                     ================
+  
+  This may take a while. Output is in $TESTCASE_ROOT/bar-bundle/bootstrap.log
+  Uncompressing... done
+  Configuring... done
+  Compiling extra dependencies... done
+  Compiling... done
+  Installing to temp prefix... done
+  
+  ================ Configure: initialising opam                  ================
+  
+  Output is in $TESTCASE_ROOT/bar-bundle/configure.log
+  Initialising... done
+  Creating sandbox... done
+  
+  ================ Compile: installing packages                  ================
+  
+  Output is in $TESTCASE_ROOT/bar-bundle/compile.log
+  Compiling packages... done
+  Cleaning up... done
+  
+  All compiled within $TESTCASE_ROOT/bar-bundle. To use the compiled packages:
+  
+    - either re-run ./bar-bundle/compile.sh with a PREFIX argument to install command wrappers
+      (it won't recompile everything)
+  
+    - or run the following to update the environment in the current shell, so that
+      they are in your PATH:
+        export PATH="$TESTCASE_ROOT/bar-bundle/bootstrap/bin:$PATH"; eval $(opam env --root "$TESTCASE_ROOT/bar-bundle/opam" --set-root)
+  
+  $ ./bar-bundle/opam/default/bin/bar
+  I'm launching bar !
+
+Cleaning up
+  $ rm -r bar-bundle bar-bundle.tar.gz
