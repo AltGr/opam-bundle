@@ -143,8 +143,8 @@ Bundle single package `baz`.
   
   <><> Resolving package set ><><><><><><><><><><><><><><><><><><><><><><><><><><>
   The following packages will be included:
-    - bar.4
     - baz.4
+    - foo.4
     - ocaml.4.14.3
     - ocaml-base-compiler.4.14.3
     - ocaml-bootstrap.4.14.3
@@ -155,7 +155,7 @@ Bundle single package `baz`.
   SOLVER                          resolve request=install:baz & ocaml-bootstrap (= 4.14.3) remove:() upgrade:()
   SOLVER                          Load cudf universe (depopts:false, build:true, post:true)
   SOLVER                          Load cudf universe (depopts:false, build:true, post:true)
-  SOLVER                          Calling solver builtin-mccs+glpk with criteria -removed,-count[avoid-version,changed],-count[version-lag,request],-count[version-lag,changed],-count[missing-depexts,changed],-changed
+  SOLVER                          Calling solver builtin-0install with criteria -count[avoid-version,solution]
   SOLVER                          External solver took 0.000s
   SOLVER                          Load cudf universe (depopts:true, build:false, post:false)
   SOLVER                          Load cudf universe (depopts:true, build:false, post:false)
@@ -164,7 +164,7 @@ Bundle single package `baz`.
   SOLVER                          resolve request=install:ocaml-base-compiler (= 4.14.3) remove:() upgrade:()
   SOLVER                          Load cudf universe (depopts:false, build:true, post:true)
   SOLVER                          Load cudf universe (depopts:false, build:true, post:true)
-  SOLVER                          Calling solver builtin-mccs+glpk with criteria -removed,-count[avoid-version,changed],-count[version-lag,request],-count[version-lag,changed],-count[missing-depexts,changed],-changed
+  SOLVER                          Calling solver builtin-0install with criteria -count[avoid-version,solution]
   SOLVER                          External solver took 0.000s
   SOLVER                          Load cudf universe (depopts:true, build:false, post:false)
   SOLVER                          Load cudf universe (depopts:true, build:false, post:false)

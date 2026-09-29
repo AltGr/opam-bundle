@@ -121,12 +121,12 @@ opam version 2.0
     - base-bigarray.base
     - base-threads.base
     - base-unix.base
+    - foo.1
     - ocaml.4.14.4
     - ocaml-base-compiler.4.14.4
     - ocaml-bootstrap.4.14.4
     - ocaml-config.2
     - ocaml-options-vanilla.1
-    - oof.2
   The bundle will be installable on systems matching the following: (os != "win32" | sys-ocaml-libc = "msvc") & os != "win32"
   [NOTE] Opam system sandboxing (introduced in 2.0) will be disabled in the bundle. You need to trust that the build scripts of the included packages don't write outside of their build directory and dest dir.
   Continue ? [Y/n] y
@@ -234,12 +234,12 @@ opam version 2.1
     - base-bigarray.base
     - base-threads.base
     - base-unix.base
+    - foo.1
     - ocaml.4.14.4
     - ocaml-base-compiler.4.14.4
     - ocaml-bootstrap.4.14.4
     - ocaml-config.2
     - ocaml-options-vanilla.1
-    - oof.2
   The bundle will be installable on systems matching the following: (os != "win32" | sys-ocaml-libc = "msvc") & os != "win32"
   [NOTE] Opam system sandboxing (introduced in 2.0) will be disabled in the bundle. You need to trust that the build scripts of the included packages don't write outside of their build directory and dest dir.
   Continue ? [Y/n] y
@@ -333,12 +333,12 @@ opam version 2.2
     - base-bigarray.base
     - base-threads.base
     - base-unix.base
+    - foo.1
     - ocaml.4.14.4
     - ocaml-base-compiler.4.14.4
     - ocaml-bootstrap.4.14.4
     - ocaml-config.2
     - ocaml-options-vanilla.1
-    - oof.2
   The bundle will be installable on systems matching the following: (os != "win32" | sys-ocaml-libc = "msvc") & os != "win32"
   [NOTE] Opam system sandboxing (introduced in 2.0) will be disabled in the bundle. You need to trust that the build scripts of the included packages don't write outside of their build directory and dest dir.
   Continue ? [Y/n] y
@@ -429,12 +429,12 @@ opam version 2.3
     - base-bigarray.base
     - base-threads.base
     - base-unix.base
+    - foo.1
     - ocaml.4.14.4
     - ocaml-base-compiler.4.14.4
     - ocaml-bootstrap.4.14.4
     - ocaml-config.2
     - ocaml-options-vanilla.1
-    - oof.2
   The bundle will be installable on systems matching the following: (os != "win32" | sys-ocaml-libc = "msvc") & os != "win32"
   [NOTE] Opam system sandboxing (introduced in 2.0) will be disabled in the bundle. You need to trust that the build scripts of the included packages don't write outside of their build directory and dest dir.
   Continue ? [Y/n] y
@@ -528,12 +528,12 @@ opam version 2.4
     - base-bigarray.base
     - base-threads.base
     - base-unix.base
+    - foo.1
     - ocaml.4.14.4
     - ocaml-base-compiler.4.14.4
     - ocaml-bootstrap.4.14.4
     - ocaml-config.2
     - ocaml-options-vanilla.1
-    - oof.2
   The bundle will be installable on systems matching the following: (os != "win32" | sys-ocaml-libc = "msvc") & os != "win32"
   [NOTE] Opam system sandboxing (introduced in 2.0) will be disabled in the bundle. You need to trust that the build scripts of the included packages don't write outside of their build directory and dest dir.
   Continue ? [Y/n] y
@@ -624,12 +624,12 @@ opam version 2.5
     - base-bigarray.base
     - base-threads.base
     - base-unix.base
+    - foo.1
     - ocaml.4.14.4
     - ocaml-base-compiler.4.14.4
     - ocaml-bootstrap.4.14.4
     - ocaml-config.2
     - ocaml-options-vanilla.1
-    - oof.2
   The bundle will be installable on systems matching the following: (os != "win32" | sys-ocaml-libc = "msvc") & os != "win32"
   [NOTE] Opam system sandboxing (introduced in 2.0) will be disabled in the bundle. You need to trust that the build scripts of the included packages don't write outside of their build directory and dest dir.
   Continue ? [Y/n] y
@@ -720,12 +720,12 @@ opam version 2.6
     - base-bigarray.base
     - base-threads.base
     - base-unix.base
+    - foo.1
     - ocaml.4.14.4
     - ocaml-base-compiler.4.14.4
     - ocaml-bootstrap.4.14.4
     - ocaml-config.2
     - ocaml-options-vanilla.1
-    - oof.2
   The bundle will be installable on systems matching the following: (os != "win32" | sys-ocaml-libc = "msvc") & os != "win32"
   [NOTE] Opam system sandboxing (introduced in 2.0) will be disabled in the bundle. You need to trust that the build scripts of the included packages don't write outside of their build directory and dest dir.
   Continue ? [Y/n] y
