@@ -89,6 +89,91 @@ Bar package.
 
 Running opam-bundle with sanitized output that contains remplaced platform specific information.
 
+============================== Test 0 ==============================
+
+
+Test some automatic retrieving of opam version
+We use a blank repo to fail quickly
+  $ mkdir OPER
+  $ echo 'opam-version: "2.0"' >  OPER/repo
+  $ export SUBSTARGS='--ocaml=0.1 --environment os="x" --repo ./OPER'
+
+Nothing, retrieve last version
+  $ opam-bundle bar.1 $SUBSTARGS 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  No opam version selected, will use 2.5.2.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+Major version, retrieve last minor version
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2.0 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.0.10.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+Major Major version, retrieve last major version
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+Exact version, pre release with ~
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2.5.0~rc1 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.5.0~rc1.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+Exact version, pre release with -
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2.5.0-rc1 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.5.0-rc1.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+Error in version
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2.1.20 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.1.20.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2.72 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.72.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+  $ opam-bundle bar.1 $SUBSTARGS --opam=4 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 4.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2.5.0~rc2 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.5.0~rc2.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
 
 ============================== Test 1 ==============================
 
