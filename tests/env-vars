@@ -10,3 +10,6 @@ export OPAMROOT="$PWD/OPAMROOT"
 export OPAMSTATUSLINE=never
 export OPAMVERBOSE=-1
 export OPAMDOWNLOADJOBS=1
+# internal environment variable to avoid requesting github api
+# for opam version lookup
+export OPAM_BUNDLE_TEST_OPAM_VERSION=1

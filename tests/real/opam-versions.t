@@ -97,11 +97,13 @@ We use a blank repo to fail quickly
   $ mkdir OPER
   $ echo 'opam-version: "2.0"' >  OPER/repo
   $ export SUBSTARGS='--ocaml=0.1 --environment os="x" --repo ./OPER'
+With github opam version lookup
+  $ export OPAM_BUNDLE_TEST_OPAM_VERSION=0
 
 Nothing, retrieve last version
   $ opam-bundle bar.1 $SUBSTARGS 2>&1 | sed -f ../arch.sed
   OCaml version is set to 0.1.
-  No opam version selected, will use 2.5.2.
+  No opam version selected, will use 2.6.0.
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
@@ -119,7 +121,7 @@ Major version, retrieve last minor version
 Major Major version, retrieve last major version
   $ opam-bundle bar.1 $SUBSTARGS --opam=2 2>&1 | sed -f ../arch.sed
   OCaml version is set to 0.1.
-  Opam version is set to 2.
+  Opam version is set to 2.6.0.
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
@@ -128,7 +130,8 @@ Major Major version, retrieve last major version
 Exact version, pre release with ~
   $ opam-bundle bar.1 $SUBSTARGS --opam=2.5.0~rc1 2>&1 | sed -f ../arch.sed
   OCaml version is set to 0.1.
-  Opam version is set to 2.5.0~rc1.
+  [NOTE] Selected opam version 2.5.0~rc1 contains '~', prefer the tag format with a '-': 2.5.0-rc1
+  Opam version is set to 2.5.0-rc1.
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
@@ -146,21 +149,21 @@ Exact version, pre release with -
 Error in version
   $ opam-bundle bar.1 $SUBSTARGS --opam=2.1.20 2>&1 | sed -f ../arch.sed
   OCaml version is set to 0.1.
-  Opam version is set to 2.1.20.
+  Selected opam version 2.1.20 does not exist, using 2.6.0 instead.
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
   [ERROR] Package ocaml-system.0.1 not found in the repositories
   $ opam-bundle bar.1 $SUBSTARGS --opam=2.72 2>&1 | sed -f ../arch.sed
   OCaml version is set to 0.1.
-  Opam version is set to 2.72.
+  Selected opam version 2.72 does not exist, using 2.6.0 instead.
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
   [ERROR] Package ocaml-system.0.1 not found in the repositories
   $ opam-bundle bar.1 $SUBSTARGS --opam=4 2>&1 | sed -f ../arch.sed
   OCaml version is set to 0.1.
-  Opam version is set to 4.
+  Selected opam version 4 does not exist, using 2.6.0 instead.
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised
@@ -168,7 +171,81 @@ Error in version
 
   $ opam-bundle bar.1 $SUBSTARGS --opam=2.5.0~rc2 2>&1 | sed -f ../arch.sed
   OCaml version is set to 0.1.
-  Opam version is set to 2.5.0~rc2.
+  [NOTE] Selected opam version 2.5.0~rc2 contains '~', prefer the tag format with a '-': 2.5.0-rc2
+  Selected opam version 2.5.0~rc2 does not exist, using 2.6.0 instead.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+
+Without opam version lookup
+  $ export OPAM_BUNDLE_TEST_OPAM_VERSION=1
+
+Nothing, retrieve last version
+  $ opam-bundle bar.1 $SUBSTARGS 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  No opam version selected, will use 2.6.0.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+Major version, retrieve last minor version
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2.0 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.0.10.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+Major Major version, retrieve last major version
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.6.0.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+Exact version, pre release
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2.5.0~rc1 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  [NOTE] Selected opam version 2.5.0~rc1 contains '~', prefer the tag format with a '-': 2.5.0-rc1
+  Opam version is set to 2.5.0-rc1.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+Error in version
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2.1.20 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.1.20.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2.72 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.6.0.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+  $ opam-bundle bar.1 $SUBSTARGS --opam=4 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  Opam version is set to 2.6.0.
+  
+  <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
+  [home] Initialised
+  [ERROR] Package ocaml-system.0.1 not found in the repositories
+
+  $ opam-bundle bar.1 $SUBSTARGS --opam=2.5.0~rc2 2>&1 | sed -f ../arch.sed
+  OCaml version is set to 0.1.
+  [NOTE] Selected opam version 2.5.0~rc2 contains '~', prefer the tag format with a '-': 2.5.0-rc2
+  Opam version is set to 2.5.0-rc2.
   
   <><> Initialising repositories ><><><><><><><><><><><><><><><><><><><><><><><><>
   [home] Initialised

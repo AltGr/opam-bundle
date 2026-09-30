@@ -75,16 +75,115 @@ let stdlib_output = output
 let archive_repository =
   OpamUrl.of_string "git+https://github.com/ocaml/opam-repository-archive"
 
-let default_opam_version = "2.6"
-let highest_opam_version = function
-  | "2.0" -> "2.0.10"
-  | "2.1" -> "2.1.4"
-  | "2.2" -> "2.2.1"
-  | "2.3" -> "2.3.0"
-  | "2.4" -> "2.4.1"
-  | "2.5" -> "2.5.2"
-  | "2.6" -> "2.6.0"
-  | v -> v
+(* from ocaml lib, introduced in 4.13 *)
+let string_starts_with ~prefix s =
+  let open String in
+  let len_s = length s
+  and len_pre = length prefix in
+  let rec aux i =
+    if i = len_pre then true
+    else if unsafe_get s i <> unsafe_get prefix i then false
+    else aux (i + 1)
+  in len_s >= len_pre && aux 0
+
+let get_opam_version v =
+  let latest_opam_version = "2.6.0" in
+  let highest_opam_version v =
+    (match v with
+     | "2.0" -> "2.0.10"
+     | "2.1" -> "2.1.4"
+     | "2.2" -> "2.2.1"
+     | "2.3" -> "2.3.0"
+     | "2.4" -> "2.4.1"
+     | "2.5" -> "2.5.2"
+     | _ -> latest_opam_version)
+    |> OpamPackage.Version.of_string
+  in
+  let lookup =
+    match v with
+    | None -> `no
+    | Some v ->
+      let v = OpamPackage.Version.to_string v in
+      match String.split_on_char '.' v with
+      | [_; _; _] ->
+        let v =
+          if String.contains v '~' then
+            (let v' = String.map (function '~' -> '-' | c -> c) v in
+             OpamConsole.note
+               "Selected opam version %s contains '~', \
+                prefer the tag format with a '-': %s" v v';
+             v')
+          else v
+        in
+        `minor v
+      | [_; _] | [_]-> `major v
+      | _ -> `no
+  in
+  let default_latest = OpamPackage.Version.of_string latest_opam_version in
+  let defaults () =
+    match lookup with
+    | `minor v -> OpamPackage.Version.of_string v
+    | `major v -> highest_opam_version v
+    | `no -> default_latest
+  in
+  let url = "https://api.github.com/repos/ocaml/opam/releases?per_page=100" in
+  (* we don't want the test to reach the limit of ax request for the github api *)
+  match OpamStd.Env.getopt "OPAM_BUNDLE_TEST_OPAM_VERSION" with
+  | Some "1" -> Done (defaults (), true)
+  | Some _ | None ->
+    OpamFilename.with_tmp_file_job @@ fun file ->
+    (* In case of failure, returns hardcoded defaults *)
+    OpamProcess.Job.catch (function _ -> Done (defaults (), true)) @@ fun () ->
+    OpamDownload.download_as ~overwrite:true
+      (OpamUrl.of_string url) file @@| fun () ->
+    let out = OpamFilename.read file in
+    let output =
+      match OpamJson.of_string out with
+      | Some (`A l) ->
+        let versions =
+          List.fold_left (fun versions -> function
+              | `O l ->
+                (match List.assoc_opt "tag_name" l with
+                 | Some (`String value) -> value::versions
+                 | _ -> versions)
+              | _ -> versions)
+            [] l
+        in
+        Some versions
+      | _ -> None
+    in
+    match output with
+    | None -> defaults (), true
+    | Some versions ->
+      let is_not_prerelease v = not (String.contains v '-') in
+      let latest () =
+        List.filter_map (fun v ->
+            if is_not_prerelease v then Some (OpamPackage.Version.of_string v)
+            else None) versions
+        |> OpamPackage.Version.Set.of_list
+        |> OpamPackage.Version.Set.max_elt_opt
+      in
+      let max_ver v =
+        List.filter_map (fun v' ->
+            if string_starts_with ~prefix:v v' && is_not_prerelease v' then
+              Some (OpamPackage.Version.of_string v') else None)
+          versions
+        |> OpamPackage.Version.Set.of_list
+        |> OpamPackage.Version.Set.max_elt_opt
+      in
+      let open OpamStd.Option.Op in
+      match lookup with
+      | `no ->
+        (match latest () with
+         | Some v -> v
+         | None -> default_latest), true
+      | `minor v ->
+        if List.mem v versions then OpamPackage.Version.of_string v, true
+        else  latest () +! default_latest, false
+      | `major v ->
+        match max_ver v with
+        | Some v -> v, true
+        | None -> latest () +! default_latest, false
 
 let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
     self_extract packages_targets =
@@ -118,17 +217,21 @@ let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
       v
   in
   let opamv =
-    match Option.map OpamPackage.Version.to_string opamv with
-    | Some v ->
-      let v = highest_opam_version v in
-      OpamConsole.formatted_msg "Opam version is set to %s.\n"
-        (OpamConsole.colorise `bold v);
-      OpamPackage.Version.of_string v
-    | None ->
-      let default = highest_opam_version default_opam_version in
-      OpamConsole.formatted_msg "No opam version selected, will use %s.\n"
-        (OpamConsole.colorise `bold default);
-      OpamPackage.Version.of_string default
+    let v, exists = OpamProcess.Job.run (get_opam_version opamv) in
+    (match opamv with
+     | Some opamv ->
+       if exists then
+         OpamConsole.formatted_msg "Opam version is set to %s.\n"
+           (OpamConsole.colorise `bold (OpamPackage.Version.to_string v))
+       else
+         OpamConsole.formatted_msg
+           "Selected opam version %s does not exist, using %s instead.\n"
+           (OpamConsole.colorise `bold (OpamPackage.Version.to_string opamv))
+           (OpamConsole.colorise `bold (OpamPackage.Version.to_string v))
+     | None ->
+       OpamConsole.formatted_msg "No opam version selected, will use %s.\n"
+         (OpamConsole.colorise `bold (OpamPackage.Version.to_string v)));
+    v
   in
   let output = match output, packages with
     | Some f, _ ->
