@@ -36,6 +36,11 @@ This test verify bundling of real package `opam-bundle` of version 0.4.
     - dune.3.22.1
     - extlib.1.7.7-1
     - mccs.1.1+19
+    - menhir.20260209
+    - menhirCST.20260209
+    - menhirGLR.20260209
+    - menhirLib.20260209
+    - menhirSdk.20260209
     - ocaml.4.14.3
     - ocaml-base-compiler.4.14.3
     - ocaml-bootstrap.4.14.3
@@ -47,7 +52,7 @@ This test verify bundling of real package `opam-bundle` of version 0.4.
     - opam-bundle.0.4
     - opam-client.2.0.10
     - opam-core.2.0.10
-    - opam-file-format.2.1.6
+    - opam-file-format.2.2.0
     - opam-format.2.0.10
     - opam-repository.2.0.10
     - opam-solver.2.0.10

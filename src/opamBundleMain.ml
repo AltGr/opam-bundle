@@ -89,9 +89,11 @@ let highest_opam_version = function
 let create_bundle ocamlv opamv repo repo_archive debug output env test doc yes
     self_extract packages_targets =
   OpamClientConfig.opam_init
-    ~debug_level:(if debug then 1 else 0)
+    ~debug_level:(if debug then if OpamStd.Sys.tty_out then 1 else -1 else 0)
     ~yes:(if yes then Some true else None)
     ~depexts:false
+    ~solver:(lazy (module OpamBuiltin0install))
+    ~solver_preferences_default:(lazy (Some "-count[avoid-version,solution]"))
     ();
   let open OpamFilename.Op in
   let repo =
