@@ -75,7 +75,7 @@ let stdlib_output = output
 let archive_repository =
   OpamUrl.of_string "git+https://github.com/ocaml/opam-repository-archive"
 
-let default_opam_version = "2.5"
+let default_opam_version = "2.6"
 let highest_opam_version = function
   | "2.0" -> "2.0.10"
   | "2.1" -> "2.1.4"

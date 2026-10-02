@@ -130,7 +130,7 @@ Copy all
 Bundle single package `baz`.
   $ opam-bundle baz --repository ./REPO --ocaml=4.14.3 --debug 2>debug | sed -f ../arch.sed
   OCaml version is set to 4.14.3.
-  No opam version selected, will use 2.5.2.
+  No opam version selected, will use 2.6.0.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
