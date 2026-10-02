@@ -285,7 +285,7 @@ Bundle single package `bar` of version 2. That implies installation of its depen
 
   $ opam-bundle bar.2 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
-  No opam version selected, will use 2.5.2.
+  No opam version selected, will use 2.6.0.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -320,7 +320,7 @@ Bundle single package `bar` of version 2. That implies installation of its depen
   bar-bundle/common.sh
   bar-bundle/compile.sh
   bar-bundle/configure.sh
-  bar-bundle/opam-full-2.5.2.tar.gz
+  bar-bundle/opam-full-2.6.0.tar.gz
   bar-bundle/repo/
   bar-bundle/repo/archives/
   bar-bundle/repo/archives/bar.2/
@@ -413,7 +413,7 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
 
   $ opam-bundle bar 'foo>2' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
-  No opam version selected, will use 2.5.2.
+  No opam version selected, will use 2.6.0.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -448,7 +448,7 @@ Since `foo` was specified as argument to `opam-bundle` it installs additionally 
   bar-bundle/common.sh
   bar-bundle/compile.sh
   bar-bundle/configure.sh
-  bar-bundle/opam-full-2.5.2.tar.gz
+  bar-bundle/opam-full-2.6.0.tar.gz
   bar-bundle/repo/
   bar-bundle/repo/archives/
   bar-bundle/repo/archives/bar.3/
@@ -549,7 +549,7 @@ wrapper.
 
   $ opam-bundle bar 'foo@foo.4' --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed | sed 's/md5=.*/md5=$HASH/' | sed 's/.* No such file or directory/mv error/g'
   OCaml version is set to 4.14.0.
-  No opam version selected, will use 2.5.2.
+  No opam version selected, will use 2.6.0.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -589,7 +589,7 @@ wrapper.
   bar-bundle/common.sh
   bar-bundle/compile.sh
   bar-bundle/configure.sh
-  bar-bundle/opam-full-2.5.2.tar.gz
+  bar-bundle/opam-full-2.6.0.tar.gz
   bar-bundle/repo/
   bar-bundle/repo/archives/
   bar-bundle/repo/archives/bar.3/
@@ -686,7 +686,7 @@ Trying to bundle two packages `bar.3` and `foo.1`. This should fail, because tho
 
   $ opam-bundle bar.3 foo.1 --repository ./REPO --ocaml=4.14.0 -y 2>&1 | sed -f ../arch.sed
   OCaml version is set to 4.14.0.
-  No opam version selected, will use 2.5.2.
+  No opam version selected, will use 2.6.0.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
@@ -727,7 +727,7 @@ Trying to bundle `foo@foo.4` with incompatible OCaml package version. This shoul
 
   $ opam-bundle bar 'foo@foo.4' --repository ./REPO --ocaml=4.13.0 -y 2>&1  | sed -f ../arch.sed
   OCaml version is set to 4.13.0.
-  No opam version selected, will use 2.5.2.
+  No opam version selected, will use 2.6.0.
   No environment specified, will use the following for package resolution (based on the host system):
     - arch = $ARCH
     - os = $OS
